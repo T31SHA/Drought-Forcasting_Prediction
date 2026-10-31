@@ -1,0 +1,140 @@
+{
+  "1": {
+    "rmse_90ci": {
+      "Persistence": [
+        0.31316696562280744,
+        0.38958303569825353
+      ],
+      "Ridge": [
+        0.20565670478491938,
+        0.2756155711998278
+      ],
+      "XGBoost": [
+        0.2507624987674556,
+        0.33225657665695757
+      ],
+      "Ridge + XGBoost": [
+        0.22216812788691362,
+        0.2830478927643355
+      ],
+      "Previous Ridge": [
+        0.20233955280496332,
+        0.25928203463400573
+      ]
+    },
+    "p_lower": {
+      "Persistence < Ridge": 0.0,
+      "Persistence < XGBoost": 0.0,
+      "Persistence < Ridge + XGBoost": 0.0,
+      "Persistence < Previous Ridge": 0.0,
+      "Ridge < Persistence": 1.0,
+      "Ridge < XGBoost": 0.9825,
+      "Ridge < Ridge + XGBoost": 0.872,
+      "Ridge < Previous Ridge": 0.0675,
+      "XGBoost < Persistence": 1.0,
+      "XGBoost < Ridge": 0.0175,
+      "XGBoost < Ridge + XGBoost": 0.0,
+      "XGBoost < Previous Ridge": 0.0015,
+      "Ridge + XGBoost < Persistence": 1.0,
+      "Ridge + XGBoost < Ridge": 0.128,
+      "Ridge + XGBoost < XGBoost": 1.0,
+      "Ridge + XGBoost < Previous Ridge": 0.013,
+      "Previous Ridge < Persistence": 1.0,
+      "Previous Ridge < Ridge": 0.9325,
+      "Previous Ridge < XGBoost": 0.9985,
+      "Previous Ridge < Ridge + XGBoost": 0.987
+    }
+  },
+  "3": {
+    "rmse_90ci": {
+      "Persistence": [
+        0.6335366079407428,
+        0.8718827278072552
+      ],
+      "Ridge": [
+        0.4664449088109023,
+        0.6542764797670059
+      ],
+      "XGBoost": [
+        0.5186283989819692,
+        0.7287747873849898
+      ],
+      "Ridge + XGBoost": [
+        0.4680331773570809,
+        0.6717338698879005
+      ],
+      "Previous Ridge": [
+        0.42704890873156415,
+        0.5558571317852277
+      ]
+    },
+    "p_lower": {
+      "Persistence < Ridge": 0.003,
+      "Persistence < XGBoost": 0.008,
+      "Persistence < Ridge + XGBoost": 0.0015,
+      "Persistence < Previous Ridge": 0.0,
+      "Ridge < Persistence": 0.997,
+      "Ridge < XGBoost": 0.97,
+      "Ridge < Ridge + XGBoost": 0.7765,
+      "Ridge < Previous Ridge": 0.016,
+      "XGBoost < Persistence": 0.992,
+      "XGBoost < Ridge": 0.03,
+      "XGBoost < Ridge + XGBoost": 0.001,
+      "XGBoost < Previous Ridge": 0.0005,
+      "Ridge + XGBoost < Persistence": 0.9985,
+      "Ridge + XGBoost < Ridge": 0.2235,
+      "Ridge + XGBoost < XGBoost": 0.999,
+      "Ridge + XGBoost < Previous Ridge": 0.006,
+      "Previous Ridge < Persistence": 1.0,
+      "Previous Ridge < Ridge": 0.984,
+      "Previous Ridge < XGBoost": 0.9995,
+      "Previous Ridge < Ridge + XGBoost": 0.994
+    }
+  },
+  "6": {
+    "rmse_90ci": {
+      "Persistence": [
+        0.8962064513434149,
+        1.3182300251569201
+      ],
+      "Ridge": [
+        0.733416977633753,
+        1.1037252227286958
+      ],
+      "XGBoost": [
+        0.6691348678257976,
+        1.0882136716045168
+      ],
+      "Ridge + XGBoost": [
+        0.6752647757220471,
+        1.0710026041308567
+      ],
+      "Previous Ridge": [
+        0.6226883712391824,
+        0.7949969699822111
+      ]
+    },
+    "p_lower": {
+      "Persistence < Ridge": 0.077,
+      "Persistence < XGBoost": 0.0175,
+      "Persistence < Ridge + XGBoost": 0.022,
+      "Persistence < Previous Ridge": 0.0,
+      "Ridge < Persistence": 0.923,
+      "Ridge < XGBoost": 0.277,
+      "Ridge < Ridge + XGBoost": 0.094,
+      "Ridge < Previous Ridge": 0.0155,
+      "XGBoost < Persistence": 0.9825,
+      "XGBoost < Ridge": 0.723,
+      "XGBoost < Ridge + XGBoost": 0.3975,
+      "XGBoost < Previous Ridge": 0.037,
+      "Ridge + XGBoost < Persistence": 0.978,
+      "Ridge + XGBoost < Ridge": 0.906,
+      "Ridge + XGBoost < XGBoost": 0.6025,
+      "Ridge + XGBoost < Previous Ridge": 0.044,
+      "Previous Ridge < Persistence": 1.0,
+      "Previous Ridge < Ridge": 0.9845,
+      "Previous Ridge < XGBoost": 0.963,
+      "Previous Ridge < Ridge + XGBoost": 0.956
+    }
+  }
+}

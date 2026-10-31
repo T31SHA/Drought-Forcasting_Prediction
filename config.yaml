@@ -1,0 +1,59 @@
+# Drought forecasting pipeline configuration.
+# Every number reported in the README / web app is produced from this file by:
+#   python -m pipeline.train --config config.yaml
+
+seed: 42
+
+data:
+  path: SPEI_0.75_35.75.csv
+  date_column: DATA
+  date_format: "%b%Y"
+  target_scale: 12          # forecast SPEI-12
+  location:
+    name: Northwestern Algeria
+    lat: 35.75
+    lon: 0.75
+
+horizons: [1, 3, 6]         # months ahead
+
+split:
+  # Rows are indexed by forecast-origin month. Training rows whose *target*
+  # month falls after dev_end are purged so no label crosses the boundary.
+  dev_end: "2015-12-01"     # train + time-series CV happen on origins <= this
+  test_start: "2016-01-01"
+  # Fixed evaluation window shared by every horizon, matching the original
+  # notebook (origins Jan 2016 -> Aug 2025, 116 months) for a fair before/after.
+  test_end: "2025-08-01"
+
+features:
+  # SPEI_48 is excluded: the source file leaves it empty for the last 4 months.
+  spei_scales: [1, 2, 3, 4, 5, 6, 9, 11, 12, 18, 24, 36]
+  target_lags: [1, 2, 3, 6, 12]
+  short_lags: [1, 2, 3]            # SPEI-1 lags (recent monthly water balance)
+  rolling_windows: [3, 6, 12]      # rolling mean/std of SPEI-1 (SPI-style accumulations)
+  drought_threshold: -1.0
+
+cv:
+  n_splits: 5
+  min_train_months: 240
+
+search:
+  n_trials: 60
+  xgboost:
+    n_estimators: [100, 800]
+    max_depth: [2, 6]
+    learning_rate: [0.01, 0.2]
+    subsample: [0.6, 1.0]
+    colsample_bytree: [0.5, 1.0]
+    min_child_weight: [1, 20]
+    reg_lambda: [0.001, 20.0]
+    reg_alpha: [0.0001, 5.0]
+  ridge_alphas: [0.01, 0.1, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
+
+intervals:
+  levels: [0.8, 0.95]
+
+output:
+  models_dir: models
+  reports_dir: reports
+  web_data: web/src/data/forecast.json
