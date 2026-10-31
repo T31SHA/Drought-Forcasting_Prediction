@@ -1,0 +1,17 @@
+{
+  "name": "drought-forecast-web",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "SPEI-12 drought forecast dashboard for Northwestern Algeria",
+  "author": "Sharahbill Mohamed Abdi",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
+  }
+}
