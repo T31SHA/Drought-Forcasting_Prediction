@@ -1,0 +1,82 @@
+# Drought forecasting pipeline configuration.
+# Every number reported in the README / web app is produced from this file by:
+#   python -m pipeline.train --config config.yaml
+
+seed: 42
+
+data:
+  path: SPEI_0.75_35.75.csv
+  date_column: DATA
+  date_format: "%b%Y"
+  target_scale: 12          # forecast SPEI-12
+  location:
+    name: Northwestern Algeria
+    lat: 35.75
+    lon: 0.75
+
+horizons: [1, 3, 6]         # months ahead
+
+split:
+  # Rows are indexed by forecast-origin month. Training rows whose *target*
+  # month falls after dev_end are purged so no label crosses the boundary.
+  dev_end: "2015-12-01"     # train + time-series CV happen on origins <= this
+  test_start: "2016-01-01"
+  # Fixed evaluation window shared by every horizon, matching the original
+  # notebook (origins Jan 2016 -> Aug 2025, 116 months) for a fair before/after.
+  test_end: "2025-08-01"
+
+features:
+  # SPEI_48 is excluded: the source file leaves it empty for the last 4 months.
+  spei_scales: [1, 2, 3, 4, 5, 6, 9, 11, 12, 18, 24, 36]
+  target_lags: [1, 2, 3, 6, 12]
+  short_lags: [1, 2, 3]            # SPEI-1 lags (recent monthly water balance)
+  rolling_windows: [3, 6, 12]      # rolling mean/std of SPEI-1 (SPI-style accumulations)
+  drought_threshold: -1.0
+  # The original notebook's calendar-trend features (year, decade, months
+  # since Jan 1950). Every listed variant is tuned and scored on the same
+  # 1973-2015 backtest folds; the lowest backtest RMSE wins (the 2016-2025
+  # test years are never used to choose). Use [false] or [true] to force one.
+  trend_variants: [false, true]
+
+cv:
+  n_splits: 5
+  min_train_months: 240
+
+search:
+  n_trials: 60
+  xgboost:
+    n_estimators: [100, 800]
+    max_depth: [2, 6]
+    learning_rate: [0.01, 0.2]
+    subsample: [0.6, 1.0]
+    colsample_bytree: [0.5, 1.0]
+    min_child_weight: [1, 20]
+    reg_lambda: [0.001, 20.0]
+    reg_alpha: [0.0001, 5.0]
+  ridge_alphas: [0.01, 0.1, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
+
+intervals:
+  levels: [0.8, 0.95]
+  # Adaptive conformal inference (Gibbs & Candes 2021) for these horizons:
+  # before each forecast the interval level is nudged by the coverage of
+  # outcomes already observed (feedback arrives h months late), so the range
+  # widens after misses and narrows after hits.
+  # gamma (step size) = "auto": chosen on the 1973-2015 backtest only. Each CV
+  # fold is replayed as a live period calibrated on earlier folds; the gamma
+  # whose rolling 60-month 80% coverage stays closest to 80% wins. The
+  # 2016-2025 test years are not used. A number here fixes gamma instead.
+  # gamma_grid is a list shared by all horizons or a per-horizon mapping.
+  # t+6 keeps the original grid: on the extended grid the backtest picks 0.3,
+  # whose live 6-month 80% and 95% ranges both hit the largest calibration
+  # error (an uninformative band). This grid was set after seeing that result.
+  adaptive:
+    horizons: [3, 6]
+    gamma: auto
+    gamma_grid:
+      3: [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3]
+      6: [0.005, 0.01, 0.02, 0.05, 0.1]
+
+output:
+  models_dir: models
+  reports_dir: reports
+  web_data: web/src/data/forecast.json

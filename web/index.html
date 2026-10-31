@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drought Outlook · Northwestern Algeria — SPEI-12 forecast</title>
+    <meta name="description" content="Monthly drought outlook for Northwestern Algeria (35.75°N, 0.75°E): SPEI-12 forecasts 1, 3 and 6 months ahead with calibrated uncertainty, honest model evaluation and 76 years of history." />
+    <meta name="author" content="Sharahbill Mohamed Abdi" />
+    <meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)" />
+    <meta property="og:title" content="Drought Outlook · Northwestern Algeria" />
+    <meta property="og:description" content="SPEI-12 drought forecasts with prediction intervals, baselines and an honest evaluation." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap header-row">
+        <a class="brand" href="#top" aria-label="Drought Outlook, home">
+          <svg aria-hidden="true" width="28" height="28" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 7c-4 6-6 9-6 12a6 6 0 0 0 12 0c0-3-2-6-6-12Z" fill="currentColor"/></svg>
+          <span>Drought Outlook</span>
+        </a>
+        <nav aria-label="Sections">
+          <ul class="nav">
+            <li><a href="#forecast">Forecast</a></li>
+            <li><a href="#history">History</a></li>
+            <li><a href="#performance">Performance</a></li>
+            <li><a href="#method">Method &amp; limits</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero wrap" id="top" aria-labelledby="hero-title">
+        <p class="eyebrow">Northwestern Algeria · 35.75°N, 0.75°E · SPEI-12</p>
+        <h1 id="hero-title">Drought outlook for the next six months</h1>
+        <p class="lede" id="hero-lede">Forecasts of the 12-month Standardised Precipitation-Evapotranspiration Index, updated from the latest observed month, with calibrated uncertainty ranges and a plain account of how much to trust them.</p>
+      </section>
+
+      <section class="wrap section" id="forecast" aria-labelledby="forecast-title">
+        <div class="section-head">
+          <h2 id="forecast-title">Forecast</h2>
+          <p class="muted" id="forecast-sub"><!--ssr:sub--></p>
+        </div>
+        <div class="cards" id="forecast-cards"><!--ssr:cards--></div>
+        <figure class="panel">
+          <figcaption>
+            <span class="fig-title">Recent conditions and outlook</span>
+            <span class="fig-sub">Observed SPEI-12 for the last three years, then the forecast with 80% and 95% prediction intervals.</span>
+          </figcaption>
+          <div class="chart" id="chart-outlook" style="min-height:300px"></div>
+          <div class="legend" id="legend-outlook"></div>
+          <details class="table-toggle"><summary>Show forecast as a table</summary><div id="table-outlook"></div></details>
+        </figure>
+        <div class="panel why" id="why"></div>
+      </section>
+
+      <section class="wrap section" id="history" aria-labelledby="history-title">
+        <div class="section-head">
+          <h2 id="history-title">76 years of drought history</h2>
+          <p class="muted">Below −1 is drought. The 1980s were the driest decade on record (worst month: October 1984). Since 2018 SPEI-12 has averaged about +1, the wettest stretch in the record.</p>
+        </div>
+        <figure class="panel">
+          <figcaption class="fig-controls">
+            <div>
+              <span class="fig-title" id="history-chart-title">SPEI-12, monthly</span>
+              <span class="fig-sub">Red = drier than normal, blue = wetter than normal.</span>
+            </div>
+            <div class="controls">
+              <div class="seg" role="group" aria-label="Accumulation window" id="scale-buttons"></div>
+              <div class="seg" role="group" aria-label="Time range" id="range-buttons"></div>
+            </div>
+          </figcaption>
+          <div class="chart" id="chart-history" style="min-height:320px"></div>
+          <details class="table-toggle"><summary>Show yearly averages as a table</summary><div id="table-history"></div></details>
+        </figure>
+        <figure class="panel">
+          <figcaption>
+            <span class="fig-title">Drought calendar</span>
+            <span class="fig-sub">Every month since 1950 for the selected accumulation window. Columns are years, rows are months.</span>
+          </figcaption>
+          <div class="heatmap-wrap" id="chart-calendar"></div>
+          <div class="legend" id="legend-calendar"></div>
+        </figure>
+      </section>
+
+      <section class="wrap section" id="performance" aria-labelledby="perf-title">
+        <div class="section-head">
+          <h2 id="perf-title">How good is the model?</h2>
+          <p class="muted" id="perf-sub">Scored on 116 monthly forecasts made from January 2016 to August 2025, data the model never saw while it was built.</p>
+        </div>
+        <div class="seg seg-lg" role="tablist" aria-label="Forecast horizon" id="horizon-tabs"></div>
+        <div class="perf-grid" id="perf-panel" role="tabpanel" aria-labelledby="horizon-tab-1">
+          <div class="stat-row" id="perf-stats"></div>
+          <figure class="panel span-2">
+            <figcaption>
+              <span class="fig-title" id="backtest-title">Backtest</span>
+              <span class="fig-sub">Observed SPEI-12 against the forecast made <span id="backtest-h">1 month</span> earlier, with the 80% interval.<span id="backtest-interval-note"></span></span>
+            </figcaption>
+            <div class="chart" id="chart-backtest" style="min-height:300px"></div>
+            <div class="legend" id="legend-backtest"></div>
+          </figure>
+          <figure class="panel span-2">
+            <figcaption>
+              <span class="fig-title">All models on the test window</span>
+              <span class="fig-sub">Lower RMSE / MAE is better. Skill compares squared error with the persistence baseline: above 0 beats it, below 0 loses to it. “Previous Ridge” is the model from before this update, re-run with its original code.</span>
+            </figcaption>
+            <div class="table-scroll" id="table-metrics"></div>
+          </figure>
+          <figure class="panel">
+            <figcaption>
+              <span class="fig-title">Error by season</span>
+              <span class="fig-sub">RMSE of the selected model and persistence, by season of the target month.</span>
+            </figcaption>
+            <div class="chart" id="chart-season"></div>
+            <div class="legend" id="legend-season"></div>
+          </figure>
+          <figure class="panel">
+            <figcaption>
+              <span class="fig-title">What drives the forecast</span>
+              <span class="fig-sub">Mean absolute SHAP value of the XGBoost model on the test window.</span>
+            </figcaption>
+            <div class="chart" id="chart-importance"></div>
+          </figure>
+        </div>
+      </section>
+
+      <section class="wrap section prose" id="method" aria-labelledby="method-title">
+        <h2 id="method-title">Method &amp; limits</h2>
+        <div class="two-col">
+          <div>
+            <h3>What SPEI-12 measures</h3>
+            <p>SPEI compares rainfall with the atmosphere's demand for water (evapotranspiration) and expresses the balance as a standard score. SPEI-12 sums the last 12 months, so it tracks slow, hydrological drought that affects reservoirs, groundwater and rain-fed crops. 0 is normal; −1 or lower is drought; −2 or lower is extreme.</p>
+            <h3>How the forecast is made</h3>
+            <p>For each horizon, nine candidates compete: <strong>persistence</strong> (next value = today's value), <strong>climatology</strong> (the historical average for that calendar month), a <strong>damped persistence</strong> regression, and a <strong>Ridge</strong> regression, an <strong>XGBoost</strong> model tuned with 60 Optuna trials and their average, each trained both with and without the original model's year/decade trend features. The learned models use 37 features known at the time of the forecast: SPEI at 12 accumulation windows, recent lags, rolling means, and drought-duration counters. The method shown above had the lowest error in 5-fold expanding-window cross-validation over 1973–2015. The test years (2016–2025) were not used to choose it.</p>
+            <h3>Uncertainty</h3>
+            <p>The ranges are conformal prediction intervals built from out-of-sample cross-validation errors. The 6-month range is <strong>adaptive</strong>: every month it widens after recent misses and narrows after hits, using only outcomes already observed. Its step size was chosen on the 1973–2015 backtest. The drought probability is the share of historical errors that, added to today's forecast, would push SPEI-12 below −1.</p>
+          </div>
+          <div>
+            <h3>Limits — read before using</h3>
+            <ul class="limits">
+              <li><strong>One grid cell.</strong> The data is a single 0.5° cell, so there is no regional breakdown and it does not describe all of Algeria.</li>
+              <li><strong>Mostly persistence.</strong> 11 of the 12 months behind next month's SPEI-12 are already known, so most of the 1-month skill is arithmetic, not insight. At 6 months the typical error (about 0.9) is close to the width of a whole drought class.</li>
+              <li><strong>No weather forecast inside.</strong> The models never see seasonal rainfall forecasts, NAO/ENSO, soil moisture or NDVI. A sudden wet or dry season will surprise them.</li>
+              <li><strong>Wet test period.</strong> 2016–2025 contained only 4 drought months, so drought-detection scores on the test window are statistically weak. The cross-validation backtest (1973–2015) has more than 70.</li>
+              <li><strong>Previous model scored better on the test decade.</strong> The original notebook's Ridge beats the new selected model on 2016–2025 at every horizon, though it lost in cross-validation over 1973–2015. Adding its year/decade trend features to the new models helps on 2016–2025 but hurts on the 1973–2015 backtest at every horizon, so they are not used. Details are in the README.</li>
+              <li><strong>Data gaps.</strong> The source file is missing SPEI-1 for November 2025 (filled with a causal regression) and SPEI-48 for the last four months (not used).</li>
+              <li><strong>Index recalibration.</strong> SPEI values are standardised over the full record by the data provider, so a sliver of future information is baked into historic values.</li>
+              <li><strong>Not an official warning.</strong> This is a research tool. For decisions, use national meteorological services.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-row">
+        <p>Built by <strong>Sharahbill Mohamed Abdi</strong>. Data: <a href="https://spei.csic.es/">SPEI Global Drought Monitor</a> (CSIC), CRU TS climatology. <span id="data-range"><!--ssr:range--></span></p>
+        <p><a href="https://github.com/T31SHA/Drought-Forcasting_Prediction">Source code &amp; full evaluation on GitHub</a></p>
+      </div>
+    </footer>
+    <div class="tooltip" id="tooltip" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
