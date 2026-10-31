@@ -193,7 +193,7 @@ The original notebook's numbers are reproduced exactly by `pipeline/legacy.py` (
 | Horizon | RMSE | MAE | R² | Explained var. | Bias | Skill vs persistence | 80% PI coverage | 95% PI coverage |
 |---|---|---|---|---|---|---|---|---|
 | t+1 | 0.238 | 0.183 | 0.946 | 0.950 | −0.059 | +51.4% | 78.4% | 92.2% |
-| t+3 | 0.547 | 0.430 | 0.718 | 0.774 | −0.245 | +43.5% | 72.4% | 93.1% |
+| t+3 | 0.547 | 0.430 | 0.718 | 0.774 | −0.245 | +43.5% | **80.2%** (adaptive) | **94.8%** (adaptive) |
 | t+6 | 0.904 | 0.753 | 0.233 | 0.495 | −0.528 | +29.0% | **79.3%** (adaptive) | **94.8%** (adaptive) |
 
 All models and horizons, including MAE, explained variance and drought detection (POD/FAR), are in [`reports/RESULTS.md`](reports/RESULTS.md).
@@ -251,40 +251,48 @@ This is what the arithmetic of SPEI predicts. The best single predictor of SPEI-
 
 ## Uncertainty
 
-**1 and 3 months: split-conformal.** The 80% and 95% radii are quantiles of absolute out-of-fold CV residuals, fixed in width.
+**1 month: split-conformal.** The 80% and 95% radii are quantiles of absolute out-of-fold CV residuals, fixed in width.
 
-**6 months: adaptive conformal** (Gibbs & Candès 2021). Static intervals held only 62.9% of 6-month outcomes in 2016–2025, because the model is biased low in that wet decade. The adaptive version starts from the static width and, before every forecast, nudges its level using outcomes that have **already been observed**. A 6-month forecast's outcome is only known 6 months later, and the update respects that delay (tested in `tests/test_pipeline.py`). After misses the range widens, and after hits it narrows.
+**3 and 6 months: adaptive conformal** (Gibbs & Candès 2021). Static intervals held only 72.4% of 3-month and 62.9% of 6-month outcomes in 2016–2025, because the model is biased low in that wet decade. The adaptive version starts from the static width and, before every forecast, nudges its level using outcomes that have **already been observed**. A forecast's outcome is only known 3 or 6 months later, and the update respects that delay (tested in `tests/test_pipeline.py`). After misses the range widens, and after hits it narrows.
 
-**How the step size γ was chosen.** My first, pre-set choice was γ = 0.01, which reached only 73.3% on 2016–2025. Picking γ from those test results would have been circular. Instead, γ is now chosen by `gamma: auto` on the **1973–2015 backtest only**: each CV fold is replayed as a live period calibrated on earlier folds, and the γ whose rolling 60-month coverage stays closest to 80% wins.
+**How the step size γ was chosen.** My first, pre-set choice was γ = 0.01, which reached only 73.3% at 6 months on 2016–2025. Picking γ from those test results would have been circular. Instead, γ is chosen by `gamma: auto` on the **1973–2015 backtest only**: each CV fold is replayed as a live period calibrated on earlier folds, and the γ whose rolling 60-month coverage stays closest to 80% wins (ties within 0.001 go to the narrower range).
 
-| γ | Backtest coverage | Rolling-coverage deviation | Backtest mean width |
-|---|---|---|---|
-| 0.005 | 85.1% | 0.057 | 1.87 |
-| 0.01 | 83.9% | 0.049 | 1.84 |
-| 0.02 | 83.2% | 0.044 | 1.81 |
-| **0.05 (chosen)** | 81.2% | 0.036 | 1.75 |
-| 0.1 | 79.7% | 0.036 (tie; wider) | 1.89 |
+| γ | 3 months: backtest coverage | Rolling deviation | Mean width | 6 months: backtest coverage | Rolling deviation | Mean width |
+|---|---|---|---|---|---|---|
+| 0.005 | 85.5% | 0.065 | 1.26 | 85.1% | 0.057 | 1.87 |
+| 0.01 | 84.6% | 0.058 | 1.22 | 83.9% | 0.049 | 1.84 |
+| 0.02 | 82.6% | 0.050 | 1.19 | 83.2% | 0.044 | 1.81 |
+| 0.05 | 80.4% | 0.033 | 1.17 | **81.2%** | **0.036 (chosen)** | **1.75** |
+| 0.1 | 79.9% | 0.023 | 1.18 | 79.7% | 0.036 (tie; wider) | 1.89 |
+| 0.2 | 79.4% | 0.017 | 1.38 | not in grid | | |
+| 0.3 | **79.4%** | **0.016 (chosen)** | **1.54** | not in grid | | |
 
-**Result on 2016–2025 (6 months ahead):**
+The γ grids differ by horizon (`intervals.adaptive.gamma_grid` in `config.yaml`):
 
-| Interval | 80% coverage | 95% coverage | Mean 80% width | 80% width for the live Aug 2026 forecast |
-|---|---|---|---|---|
-| Static split-conformal (before) | 62.9% | 84.5% | 1.77 | 1.77 |
-| **Adaptive, γ = 0.05 (now used)** | **79.3%** | **94.8%** | 2.57 | 1.90 |
+- **3 months** uses the extended grid up to 0.3, because 0.1 was the best value at the top of the original grid. The backtest again picks the largest value, 0.3, so a still larger γ might fit the backtest better. That has not been tested. The gain over 0.2 is small (rolling deviation 0.016 vs 0.017) and comes with a wider average backtest range (1.54 vs 1.38).
+- **6 months** keeps the original grid up to 0.1. On the extended grid the backtest also picks 0.3 at 6 months. At 0.3 the 2016–2025 coverage falls to 76.7%, and the live 80% and 95% ranges both hit the largest calibration error (−1.05 to 2.93), which carries no information. Keeping the original 6-month grid was decided **after** seeing that result, so it is not a backtest-only choice.
 
-The 80% range now holds 79.3% of outcomes. The cost is width: over the test decade the 6-month 80% range averaged 2.57 SPEI units, 45% wider than the static range. The live Aug 2026 range is −0.01 to 1.89. Sensitivity to every γ in the grid is in `reports/RESULTS.md`.
+**Result on 2016–2025:**
+
+| Horizon | Interval | 80% coverage | 95% coverage | Mean 80% width | 80% width for the live forecast |
+|---|---|---|---|---|---|
+| t+3 | Static split-conformal (before) | 72.4% | 93.1% | 1.18 | 1.18 |
+| t+3 | **Adaptive, γ = 0.3 (now used)** | **80.2%** | **94.8%** | 1.87 | 0.71 |
+| t+6 | Static split-conformal (before) | 62.9% | 84.5% | 1.77 | 1.77 |
+| t+6 | **Adaptive, γ = 0.05 (now used)** | **79.3%** | **94.8%** | 2.57 | 1.90 |
+
+The 80% ranges now hold 80.2% (3 months) and 79.3% (6 months) of outcomes. The cost is width: over the test decade the 80% range averaged 58% wider than the static range at 3 months and 45% wider at 6 months. The live ranges move the other way at 3 months. Recent 3-month forecasts have landed inside their ranges, so the live May 2026 80% range is 0.88 to 1.59, narrower than the static range. A large γ reacts quickly in both directions, so this range will widen just as quickly after misses. The live Aug 2026 6-month range is −0.01 to 1.89. Sensitivity to every γ in each grid is in `reports/RESULTS.md`.
 
 **All horizons, test window:**
 
 | Horizon | Method | 80% coverage | 95% coverage | 80% width (live) |
 |---|---|---|---|---|
 | t+1 | split-conformal | 78.4% | 92.2% | 0.57 |
-| t+3 | split-conformal | 72.4% | 93.1% | 1.18 |
-| t+6 | adaptive conformal | 79.3% | 94.8% | 1.90 |
+| t+3 | adaptive conformal, γ = 0.3 | 80.2% | 94.8% | 0.71 |
+| t+6 | adaptive conformal, γ = 0.05 | 79.3% | 94.8% | 1.90 |
 
 - **Before:** the original bootstrap intervals covered 44.8% of outcomes against a nominal 90%, as reported in the notebook.
-- **Still open:** the 3-month 80% range under-covers (72.4%). Adding `3` to `intervals.adaptive.horizons` applies the same method there. That was outside this change and has not been evaluated.
-- **Drought probability** is the share of out-of-fold residuals that, added to the forecast, would put SPEI-12 at or below −1. For the adaptive horizon the residuals are rescaled to the live interval width.
+- **Drought probability** is the share of out-of-fold residuals that, added to the forecast, would put SPEI-12 at or below −1. For the adaptive horizons the residuals are rescaled to the live interval width.
 
 ---
 
@@ -292,7 +300,7 @@ The 80% range now holds 79.3% of outcomes. The cost is width: over the test deca
 
 - **One grid cell.** No spatial or regional information. The forecast does not describe all of Algeria.
 - **No exogenous predictors.** There are no seasonal rainfall forecasts, NAO/ENSO indices, soil moisture or NDVI. Most skill at 1 month is arithmetic: 11 of 12 months are already known.
-- **Trend features are a bet either way.** Without them (the backtest choice) the model under-predicts the persistent 2018–2025 wet run. With them it would extrapolate a 1950–2015 drift that the 1973–2015 backtest does not support. The adaptive 6-month range partly compensates by widening when the bias causes misses.
+- **Trend features are a bet either way.** Without them (the backtest choice) the model under-predicts the persistent 2018–2025 wet run. With them it would extrapolate a 1950–2015 drift that the 1973–2015 backtest does not support. The adaptive 3- and 6-month ranges partly compensate by widening when the bias causes misses.
 - **The test decade is unusual.** 2016–2025 was the wettest period in the record, with only 4 drought months. Test-window detection scores are therefore uninformative, and model rankings differ between the test window and the long backtest.
 - **SPEI calibration.** The data provider standardises SPEI over the full record, so a small amount of future distributional information is baked into historic values. This affects all models equally.
 - **Data gaps.** SPEI-1 for Nov 2025 is imputed (R² ≈ 0.92), and SPEI-48 is unused.
@@ -304,7 +312,7 @@ The 80% range now holds 79.3% of outcomes. The cost is width: over the test deca
 
 `web/` is a dependency-free static site: Vite + TypeScript with hand-built SVG charts. It renders:
 
-- current conditions and the 1/3/6-month forecast, with 80% and 95% intervals (adaptive at 6 months), a drought probability and a risk level (Low / Watch / Elevated / High)
+- current conditions and the 1/3/6-month forecast, with 80% and 95% intervals (adaptive at 3 and 6 months), a drought probability and a risk level (Low / Watch / Elevated / High)
 - a forecast fan chart, and "why the model expects this" (top SHAP contributions)
 - 76-year history at five accumulation windows with 10 y / 30 y / all ranges, and a month × year drought calendar
 - backtests, an all-model metrics table (including the previous model), error by season, and feature importance

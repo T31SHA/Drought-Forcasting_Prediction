@@ -29,6 +29,13 @@ Each CV fold is replayed as a live period calibrated on earlier folds. Criterion
 
 | Horizon | gamma | Backtest coverage | Rolling-coverage deviation | Backtest mean 80% width |
 |---|---|---|---|---|
+| t+3 | 0.005 | 85.5% | 0.065 | 1.26 |
+| t+3 | 0.01 | 84.6% | 0.058 | 1.22 |
+| t+3 | 0.02 | 82.6% | 0.050 | 1.19 |
+| t+3 | 0.05 | 80.4% | 0.033 | 1.17 |
+| t+3 | 0.1 | 79.9% | 0.023 | 1.18 |
+| t+3 | 0.2 | 79.4% | 0.017 | 1.38 |
+| t+3 | 0.3 ★ | 79.4% | 0.016 | 1.54 |
 | t+6 | 0.005 | 85.1% | 0.057 | 1.87 |
 | t+6 | 0.01 | 83.9% | 0.049 | 1.84 |
 | t+6 | 0.02 | 83.2% | 0.044 | 1.81 |
@@ -37,15 +44,29 @@ Each CV fold is replayed as a live period calibrated on earlier folds. Criterion
 
 ## Prediction-interval coverage on the test window
 
-Adaptive conformal (Gibbs & Candès 2021) is used for horizons [6] with the backtest-chosen
-gamma ({6: 0.05}). The other gammas are shown for transparency only; they were not used to choose.
+Adaptive conformal (Gibbs & Candès 2021) is used for horizons [3, 6] with the backtest-chosen
+gamma ({3: 0.3, 6: 0.05}). The other gammas are shown for transparency only; they were not used to choose.
 
 | Horizon | Method | gamma | Level | Coverage | Mean width | Width for the live forecast |
 |---|---|---|---|---|---|---|
 | t+1 | static split-conformal | — | 80% | 78.4% | 0.57 | 0.57 |
 | t+1 | static split-conformal | — | 95% | 92.2% | 0.99 | 0.99 |
 | t+3 | static split-conformal | — | 80% | 72.4% | 1.18 | 1.18 |
+| t+3 | adaptive conformal | 0.005 | 80% | 75.9% | 1.23 | 1.23 |
+| t+3 | adaptive conformal | 0.01 | 80% | 77.6% | 1.24 | 1.25 |
+| t+3 | adaptive conformal | 0.02 | 80% | 79.3% | 1.28 | 1.18 |
+| t+3 | adaptive conformal | 0.05 | 80% | 80.2% | 1.49 | 1.11 |
+| t+3 | adaptive conformal | 0.1 | 80% | 80.2% | 1.50 | 1.04 |
+| t+3 | adaptive conformal | 0.2 | 80% | 80.2% | 1.65 | 0.85 |
+| t+3 | adaptive conformal (used) | 0.3 | 80% | 80.2% | 1.87 | 0.71 |
 | t+3 | static split-conformal | — | 95% | 93.1% | 1.87 | 1.87 |
+| t+3 | adaptive conformal | 0.005 | 95% | 93.1% | 1.93 | 1.93 |
+| t+3 | adaptive conformal | 0.01 | 95% | 92.2% | 2.14 | 2.15 |
+| t+3 | adaptive conformal | 0.02 | 95% | 94.0% | 2.37 | 2.07 |
+| t+3 | adaptive conformal | 0.05 | 95% | 94.8% | 2.47 | 1.88 |
+| t+3 | adaptive conformal | 0.1 | 95% | 94.8% | 2.56 | 1.91 |
+| t+3 | adaptive conformal | 0.2 | 95% | 94.8% | 2.67 | 1.93 |
+| t+3 | adaptive conformal (used) | 0.3 | 95% | 94.8% | 2.76 | 2.02 |
 | t+6 | static split-conformal | — | 80% | 62.9% | 1.77 | 1.77 |
 | t+6 | adaptive conformal | 0.005 | 80% | 70.7% | 1.86 | 1.98 |
 | t+6 | adaptive conformal | 0.01 | 80% | 73.3% | 1.99 | 2.11 |

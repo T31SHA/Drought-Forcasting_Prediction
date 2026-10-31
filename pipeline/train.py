@@ -283,11 +283,14 @@ def main(config_path: str) -> None:
         seq_err = np.abs(y.loc[seq_idx].to_numpy() - sel["model"].predict(Xs.loc[seq_idx]))
         adaptive = h in ada.get("horizons", [])
         gamma = ada.get("gamma")
+        # gamma_grid: one list for every horizon, or a {horizon: list} mapping.
+        grid = ada.get("gamma_grid", [])
+        grid = grid.get(h, []) if isinstance(grid, dict) else grid
         if adaptive and gamma == "auto":
             # Per-fold OOF errors of the selected model (folds are contiguous, in order).
             sizes = [len(va) for _, va in folds]
             fold_err = np.split(np.abs(sel["res_oof"]), np.cumsum(sizes)[:-1])
-            gamma, gtable = select_gamma(fold_err, levels[0], ada["gamma_grid"], delay=h)
+            gamma, gtable = select_gamma(fold_err, levels[0], grid, delay=h)
             gamma_choice[h] = {"gamma": gamma, "candidates": gtable}
             print(f"[h={h}] adaptive gamma chosen on 1973-2015 backtest: {gamma}")
         band, live_r = {}, {}
@@ -296,7 +299,7 @@ def main(config_path: str) -> None:
             interval_rows.append({"horizon": h, "model": selected, "method": "static split-conformal", "gamma": None,
                                   "level": lv, "coverage": coverage(yt, sel["pred"] - q, sel["pred"] + q),
                                   "mean_width": 2 * q, "live_width": 2 * q})
-            for g in ada.get("gamma_grid", []) if adaptive else []:
+            for g in grid if adaptive else []:
                 rs, rl = adaptive_conformal(cal, seq_err, lv, g, delay=h)
                 rt = rs[: len(test)]
                 interval_rows.append({"horizon": h, "model": selected, "method": "adaptive conformal", "gamma": g,
