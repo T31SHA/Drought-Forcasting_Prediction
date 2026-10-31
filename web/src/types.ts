@@ -37,6 +37,7 @@ export interface HorizonForecast {
   class: string;
   intervals: Record<"80" | "95", [number, number]>;
   p_drought: number;
+  interval_method: string;
   drivers: Driver[];
 }
 
@@ -45,7 +46,8 @@ export interface Backtest {
   observed: number[];
   selected: string;
   predictions: Record<string, number[]>;
-  radius: Record<"80" | "95", number>;
+  radius: Record<"80" | "95", number[]>; // per test month (adaptive intervals vary)
+  interval_method: string;
 }
 
 export interface Payload {

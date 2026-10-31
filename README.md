@@ -50,9 +50,9 @@ config.yaml                 # every setting: seed, split dates, features, search
 requirements-pipeline.txt   # pinned environment for the pipeline (Python 3.14)
 pipeline/
   data.py                   # load CSV, causal fill of the one missing SPEI-1 month
-  features.py               # leakage-safe features, purged time split, season/regime labels
+  features.py               # leakage-safe features, optional calendar-trend features, purged split
   models.py                 # persistence, climatology, damped persistence, Ridge, XGBoost, blend
-  evaluate.py               # metrics, conformal intervals, block bootstrap
+  evaluate.py               # metrics, conformal + adaptive conformal intervals, block bootstrap
   legacy.py                 # exact re-implementation of the original notebook's Ridge
   train.py                  # tune → CV → select → test once → refit → export
 tests/test_pipeline.py      # leakage / protocol tests (pytest)
@@ -73,8 +73,8 @@ requirements.txt            # original environment for app.py / notebook (unchan
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-pipeline.txt
 
-python -m pytest -q                         # 5 leakage/protocol tests
-python -m pipeline.train --config config.yaml   # ~5 min on 8 CPU cores
+python -m pytest -q                         # 7 leakage/protocol tests
+python -m pipeline.train --config config.yaml   # ~6.5 min on 8 CPU cores
 ```
 
 The run is deterministic: a fixed seed (`seed: 42`), a seeded Optuna TPE sampler, `n_jobs=1` for the search, and fixed XGBoost threads. Two consecutive runs produced identical tuned hyperparameters and metrics. Outputs:
@@ -110,7 +110,7 @@ npm run preview    # serve the build on http://localhost:4173
 
 Choices worth knowing:
 
-- **No year or time-trend features.** Trees cannot extrapolate them, and a trend fitted on 1950–2015 is a fragile assumption for the future. See [Results](#results) for what this cost on the test decade.
+- **Year/trend features are a config option, decided by the backtest.** The original notebook's `year`, `decade` and `month_since_start` features can be added via `features.trend_variants` (default `[false, true]`: train and score both). Every learned model is trained in both variants on the same folds, and the lowest 1973–2015 backtest RMSE wins. The backtest chose **no trend** for every model at every horizon. See [Trend features](#trend-features-with-vs-without).
 - **SPEI-48 is not used.** The source file leaves it empty for Nov 2025 to Feb 2026, so a model that needed it could not forecast from the latest month.
 - **SPEI-1 for Nov 2025 is missing in the source file.** It is filled by a regression `SPEI_1[t] ~ SPEI_2[t] + SPEI_1[t−1]` fitted only on earlier months (5-fold CV R² 0.915, RMSE 0.29). Without this, every SPEI-1 lag and rolling feature would be undefined for the following year.
 - **NDVI was requested but is not available.** The repo contains no vegetation data, and satellite NDVI only starts in 1981. Adding it would mean a new external data source, so it is listed under [Limitations](#limitations) rather than approximated.
@@ -132,9 +132,10 @@ Choices worth knowing:
 | Ridge | standardised features. α ∈ {0.01 … 1000} tuned by CV |
 | XGBoost | 60-trial Optuna TPE search over 8 hyperparameters, scored by CV RMSE |
 | Ridge + XGBoost | equal-weight average |
+| … `+trend` | each of the three above, retrained and re-tuned with the year/decade/month-count trend features added |
 | Previous Ridge | the original notebook's model, re-implemented exactly (`pipeline/legacy.py`) |
 
-Ridge and XGBoost learn the **change from persistence** (y(t+h) − SPEI-12(t)). Regularisation then shrinks toward "no change" rather than toward the long-term mean.
+Ridge and XGBoost learn the **change from persistence** (y(t+h) − SPEI-12(t)). Regularisation then shrinks toward "no change" rather than toward the long-term mean. The model used on the website is whichever of the nine candidates (3 baselines + 3 learned × 2 feature variants) has the lowest backtest RMSE. It is currently Ridge without trend features at all three horizons.
 
 ---
 
@@ -146,28 +147,46 @@ The original notebook's numbers are reproduced exactly by `pipeline/legacy.py` (
 
 **Test window, 116 forecasts per horizon, origins 2016-01 to 2025-08**
 
-| Horizon | Persistence | Previous Ridge (before) | New selected: Ridge (after) | XGBoost (tuned) | Ridge + XGBoost |
-|---|---|---|---|---|---|
-| t+1 RMSE | 0.341 | **0.228** | 0.238 | 0.283 | 0.248 |
-| t+3 RMSE | 0.728 | **0.481** | 0.547 | 0.607 | 0.557 |
-| t+6 RMSE | 1.073 | **0.701** | 0.904 | 0.861 | 0.857 |
+| Horizon | Persistence | Previous Ridge (before) | New selected: Ridge (after) | Ridge +trend | XGBoost (tuned) | Ridge + XGBoost |
+|---|---|---|---|---|---|---|
+| t+1 RMSE | 0.341 | **0.228** | 0.238 | 0.233 | 0.283 | 0.248 |
+| t+3 RMSE | 0.728 | **0.481** | 0.547 | 0.518 | 0.607 | 0.557 |
+| t+6 RMSE | 1.073 | **0.701** | 0.904 | 0.822 | 0.861 | 0.857 |
 
 **Cross-validation, 1973–2015, about 510 out-of-fold forecasts per horizon, same folds for every model**
 
-| Horizon | Persistence | Previous Ridge (before) | New Ridge (after) | XGBoost | Ridge + XGBoost |
-|---|---|---|---|---|---|
-| t+1 RMSE | 0.345 | 0.256 | **0.238** | 0.301 | 0.256 |
-| t+3 RMSE | 0.655 | 0.484 | **0.467** | 0.535 | 0.483 |
-| t+6 RMSE | 0.967 | 0.708 | **0.687** | 0.729 | 0.690 |
+| Horizon | Persistence | Previous Ridge (before) | New Ridge (after) | Ridge +trend | XGBoost | Ridge + XGBoost |
+|---|---|---|---|---|---|---|
+| t+1 RMSE | 0.345 | 0.256 | **0.238** | 0.242 | 0.301 | 0.256 |
+| t+3 RMSE | 0.655 | 0.484 | **0.467** | 0.496 | 0.535 | 0.483 |
+| t+6 RMSE | 0.967 | 0.708 | **0.687** | 0.723 | 0.729 | 0.690 |
 
 **Plain reading:**
 
 1. **On the 2016–2025 test decade, the new model is worse than the previous one at every horizon.** RMSE rose from 0.228 to 0.238 at 1 month (+4%), 0.481 to 0.547 at 3 months (+14%), and 0.701 to 0.904 at 6 months (+29%). R² fell from 0.951 to 0.946, 0.782 to 0.718, and 0.539 to 0.233. A moving-block bootstrap (12-month blocks, 2000 resamples) gives the previous Ridge a lower RMSE in 93%, 98% and 98% of resamples, so this is not noise.
 2. **On the 43-year cross-validation backtest, the new Ridge is better at every horizon** (−7%, −4%, −3% RMSE), and that is why it was selected. Selection was made before the test window was scored, and I did not change the selection after seeing the test result.
-3. **Why the two disagree.** A diagnostic (not used for selection) removed the previous model's `year`, `decade` and `month_since_start` features. Its 6-month test RMSE rose from 0.701 to 0.744, with bias going from −0.17 to −0.30. Its trend features suit the unusually wet 2018–2025 period. The new model, which has no trend term, under-predicts that wet run: at 6 months in wet months its bias is −1.00, against −0.56 for the previous model. The remaining gap is likely due to the previous model's 37–48-month SPEI windows and its alpha being tuned on 2006–2015 alone. Whether trend extrapolation helps in the next decade is unknown. It helped in this one.
+3. **Why the two disagree: largely the trend features.** Adding the previous model's `year` / `decade` / `month_since_start` features to the new models (next section) improves them on 2016–2025 at every horizon, but makes them worse on the 1973–2015 backtest at every horizon. A trend term suits the unusually wet 2018–2025 run. Over 1973–2015, where wet and dry decades alternate, it hurts. The new model has no trend term and under-predicts the wet run: at 6 months, in wet months, its bias is −1.00 against −0.56 for the previous model. Even with trend features the new Ridge (0.822 at 6 months) does not reach the previous model (0.701). The rest of the gap is probably due to the previous model's 37–48-month SPEI windows and its alpha being tuned on 2006–2015 alone. Whether trend extrapolation helps in the next decade is unknown. It helped in this one.
 4. **Every learned model beats persistence** on both test and CV at every horizon. Test skill (1 − MSE/MSE_persistence): 51% / 44% / 29% for the new Ridge, 55% / 56% / 57% for the previous Ridge.
-5. **Tuned XGBoost does not beat Ridge** in CV at any horizon, despite a 60-trial search. On the test window it beats the new Ridge only at 6 months (0.861 vs 0.904). The signal here is mostly linear persistence, and 500–700 training months is little data for trees.
+5. **Tuned XGBoost does not beat Ridge** in CV at any horizon, with or without trend features, despite a 60-trial search per variant. On the test window it beats the new Ridge only at 6 months (0.861 vs 0.904). The signal here is mostly linear persistence, and 500–700 training months is little data for trees.
 6. **Climatology is the worst model** at all horizons on the test window (RMSE about 1.27, bias −0.75), because 2016–2025 was far wetter than the long-term average.
+
+### Trend features: with vs without
+
+`features.trend_variants: [false, true]` trains and tunes every learned model twice on identical folds. **The backtest decides; the 2016–2025 numbers are reported, not used.** Bold = the better of the pair.
+
+| Horizon | Model | Backtest RMSE without trend | Backtest RMSE with trend | Test RMSE without trend | Test RMSE with trend |
+|---|---|---|---|---|---|
+| t+1 | Ridge | **0.238** | 0.242 | 0.238 | **0.233** |
+| t+1 | XGBoost | **0.301** | 0.305 | **0.283** | 0.284 |
+| t+1 | Ridge + XGBoost | **0.256** | 0.259 | 0.248 | **0.244** |
+| t+3 | Ridge | **0.467** | 0.496 | 0.547 | **0.518** |
+| t+3 | XGBoost | **0.535** | 0.540 | 0.607 | **0.601** |
+| t+3 | Ridge + XGBoost | **0.483** | 0.499 | 0.557 | **0.538** |
+| t+6 | Ridge | **0.687** | 0.723 | 0.904 | **0.822** |
+| t+6 | XGBoost | **0.729** | 0.756 | 0.861 | **0.838** |
+| t+6 | Ridge + XGBoost | **0.690** | 0.729 | 0.857 | **0.809** |
+
+**Winner: without trend, for every model at every horizon** (backtest RMSE 1–6% lower). So the website still uses Ridge without trend features. On the test years the trend variant would have been better in 8 of 9 cases, by up to 9% (Ridge, 6 months: 0.822 vs 0.904). This is the clearest example in the project of the backtest and the most recent decade disagreeing. If you believe the 2018–2025 wet drift will continue, setting `trend_variants: [true]` forces the trend variant.
 
 ### Full test-window metrics (selected model)
 
@@ -175,7 +194,7 @@ The original notebook's numbers are reproduced exactly by `pipeline/legacy.py` (
 |---|---|---|---|---|---|---|---|---|
 | t+1 | 0.238 | 0.183 | 0.946 | 0.950 | −0.059 | +51.4% | 78.4% | 92.2% |
 | t+3 | 0.547 | 0.430 | 0.718 | 0.774 | −0.245 | +43.5% | 72.4% | 93.1% |
-| t+6 | 0.904 | 0.753 | 0.233 | 0.495 | −0.528 | +29.0% | 62.9% | 84.5% |
+| t+6 | 0.904 | 0.753 | 0.233 | 0.495 | −0.528 | +29.0% | **79.3%** (adaptive) | **94.8%** (adaptive) |
 
 All models and horizons, including MAE, explained variance and drought detection (POD/FAR), are in [`reports/RESULTS.md`](reports/RESULTS.md).
 
@@ -232,16 +251,40 @@ This is what the arithmetic of SPEI predicts. The best single predictor of SPEI-
 
 ## Uncertainty
 
-Prediction intervals are **split-conformal**: the 80% and 95% radii are quantiles of absolute out-of-fold CV residuals. The drought probability is the share of those residuals that, added to the current forecast, would put SPEI-12 at or below −1.
+**1 and 3 months: split-conformal.** The 80% and 95% radii are quantiles of absolute out-of-fold CV residuals, fixed in width.
 
-| Horizon | 80% PI coverage (test) | 95% PI coverage (test) | 80% width |
+**6 months: adaptive conformal** (Gibbs & Candès 2021). Static intervals held only 62.9% of 6-month outcomes in 2016–2025, because the model is biased low in that wet decade. The adaptive version starts from the static width and, before every forecast, nudges its level using outcomes that have **already been observed**. A 6-month forecast's outcome is only known 6 months later, and the update respects that delay (tested in `tests/test_pipeline.py`). After misses the range widens, and after hits it narrows.
+
+**How the step size γ was chosen.** My first, pre-set choice was γ = 0.01, which reached only 73.3% on 2016–2025. Picking γ from those test results would have been circular. Instead, γ is now chosen by `gamma: auto` on the **1973–2015 backtest only**: each CV fold is replayed as a live period calibrated on earlier folds, and the γ whose rolling 60-month coverage stays closest to 80% wins.
+
+| γ | Backtest coverage | Rolling-coverage deviation | Backtest mean width |
 |---|---|---|---|
-| t+1 | 78.4% | 92.2% | 0.57 |
-| t+3 | 72.4% | 93.1% | 1.18 |
-| t+6 | 62.9% | 84.5% | 1.77 |
+| 0.005 | 85.1% | 0.057 | 1.87 |
+| 0.01 | 83.9% | 0.049 | 1.84 |
+| 0.02 | 83.2% | 0.044 | 1.81 |
+| **0.05 (chosen)** | 81.2% | 0.036 | 1.75 |
+| 0.1 | 79.7% | 0.036 (tie; wider) | 1.89 |
+
+**Result on 2016–2025 (6 months ahead):**
+
+| Interval | 80% coverage | 95% coverage | Mean 80% width | 80% width for the live Aug 2026 forecast |
+|---|---|---|---|---|
+| Static split-conformal (before) | 62.9% | 84.5% | 1.77 | 1.77 |
+| **Adaptive, γ = 0.05 (now used)** | **79.3%** | **94.8%** | 2.57 | 1.90 |
+
+The 80% range now holds 79.3% of outcomes. The cost is width: over the test decade the 6-month 80% range averaged 2.57 SPEI units, 45% wider than the static range. The live Aug 2026 range is −0.01 to 1.89. Sensitivity to every γ in the grid is in `reports/RESULTS.md`.
+
+**All horizons, test window:**
+
+| Horizon | Method | 80% coverage | 95% coverage | 80% width (live) |
+|---|---|---|---|---|
+| t+1 | split-conformal | 78.4% | 92.2% | 0.57 |
+| t+3 | split-conformal | 72.4% | 93.1% | 1.18 |
+| t+6 | adaptive conformal | 79.3% | 94.8% | 1.90 |
 
 - **Before:** the original bootstrap intervals covered 44.8% of outcomes against a nominal 90%, as reported in the notebook.
-- **After:** coverage is close to nominal at 1 month. At 6 months it under-covers (63% vs 80%), because the model is biased in the wet test decade and conformal intervals assume errors behave like the past.
+- **Still open:** the 3-month 80% range under-covers (72.4%). Adding `3` to `intervals.adaptive.horizons` applies the same method there. That was outside this change and has not been evaluated.
+- **Drought probability** is the share of out-of-fold residuals that, added to the forecast, would put SPEI-12 at or below −1. For the adaptive horizon the residuals are rescaled to the live interval width.
 
 ---
 
@@ -249,6 +292,7 @@ Prediction intervals are **split-conformal**: the 80% and 95% radii are quantile
 
 - **One grid cell.** No spatial or regional information. The forecast does not describe all of Algeria.
 - **No exogenous predictors.** There are no seasonal rainfall forecasts, NAO/ENSO indices, soil moisture or NDVI. Most skill at 1 month is arithmetic: 11 of 12 months are already known.
+- **Trend features are a bet either way.** Without them (the backtest choice) the model under-predicts the persistent 2018–2025 wet run. With them it would extrapolate a 1950–2015 drift that the 1973–2015 backtest does not support. The adaptive 6-month range partly compensates by widening when the bias causes misses.
 - **The test decade is unusual.** 2016–2025 was the wettest period in the record, with only 4 drought months. Test-window detection scores are therefore uninformative, and model rankings differ between the test window and the long backtest.
 - **SPEI calibration.** The data provider standardises SPEI over the full record, so a small amount of future distributional information is baked into historic values. This affects all models equally.
 - **Data gaps.** SPEI-1 for Nov 2025 is imputed (R² ≈ 0.92), and SPEI-48 is unused.
@@ -260,7 +304,7 @@ Prediction intervals are **split-conformal**: the 80% and 95% radii are quantile
 
 `web/` is a dependency-free static site: Vite + TypeScript with hand-built SVG charts. It renders:
 
-- current conditions and the 1/3/6-month forecast, with 80% and 95% intervals, a drought probability and a risk level (Low / Watch / Elevated / High)
+- current conditions and the 1/3/6-month forecast, with 80% and 95% intervals (adaptive at 6 months), a drought probability and a risk level (Low / Watch / Elevated / High)
 - a forecast fan chart, and "why the model expects this" (top SHAP contributions)
 - 76-year history at five accumulation windows with 10 y / 30 y / all ranges, and a month × year drought calendar
 - backtests, an all-model metrics table (including the previous model), error by season, and feature importance
@@ -272,7 +316,7 @@ Prediction intervals are **split-conformal**: the 80% and 95% radii are quantile
 
 | | Performance | Accessibility | Best Practices | SEO |
 |---|---|---|---|---|
-| Mobile | 100 | 100 | 100 | 100 |
+| Mobile | 99 | 100 | 100 | 100 |
 | Desktop | 100 | 100 | 100 | 100 |
 
 The hero forecast cards are pre-rendered into `index.html` at build time by a small Vite plugin, so there is no layout shift (CLS 0) and the content is visible before JavaScript runs.

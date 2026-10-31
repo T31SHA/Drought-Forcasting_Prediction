@@ -97,7 +97,7 @@
           <figure class="panel span-2">
             <figcaption>
               <span class="fig-title" id="backtest-title">Backtest</span>
-              <span class="fig-sub">Observed SPEI-12 against the forecast made <span id="backtest-h">1 month</span> earlier, with the 80% interval.</span>
+              <span class="fig-sub">Observed SPEI-12 against the forecast made <span id="backtest-h">1 month</span> earlier, with the 80% interval.<span id="backtest-interval-note"></span></span>
             </figcaption>
             <div class="chart" id="chart-backtest" style="min-height:300px"></div>
             <div class="legend" id="legend-backtest"></div>
@@ -134,9 +134,9 @@
             <h3>What SPEI-12 measures</h3>
             <p>SPEI compares rainfall with the atmosphere's demand for water (evapotranspiration) and expresses the balance as a standard score. SPEI-12 sums the last 12 months, so it tracks slow, hydrological drought that affects reservoirs, groundwater and rain-fed crops. 0 is normal; −1 or lower is drought; −2 or lower is extreme.</p>
             <h3>How the forecast is made</h3>
-            <p>For each horizon, six methods compete: <strong>persistence</strong> (next value = today's value), <strong>climatology</strong> (the historical average for that calendar month), a <strong>damped persistence</strong> regression, a <strong>Ridge</strong> regression, an <strong>XGBoost</strong> model tuned with 60 Optuna trials, and an average of the last two. The learned models use 37 features known at the time of the forecast: SPEI at 12 accumulation windows, recent lags, rolling means, and drought-duration counters. The method shown above had the lowest error in 5-fold expanding-window cross-validation over 1973–2015. The test years (2016–2025) were not used to choose it.</p>
+            <p>For each horizon, nine candidates compete: <strong>persistence</strong> (next value = today's value), <strong>climatology</strong> (the historical average for that calendar month), a <strong>damped persistence</strong> regression, and a <strong>Ridge</strong> regression, an <strong>XGBoost</strong> model tuned with 60 Optuna trials and their average, each trained both with and without the original model's year/decade trend features. The learned models use 37 features known at the time of the forecast: SPEI at 12 accumulation windows, recent lags, rolling means, and drought-duration counters. The method shown above had the lowest error in 5-fold expanding-window cross-validation over 1973–2015. The test years (2016–2025) were not used to choose it.</p>
             <h3>Uncertainty</h3>
-            <p>The ranges are split-conformal prediction intervals built from out-of-sample cross-validation errors. The drought probability is the share of those historical errors that, added to today's forecast, would push SPEI-12 below −1.</p>
+            <p>The ranges are conformal prediction intervals built from out-of-sample cross-validation errors. The 6-month range is <strong>adaptive</strong>: every month it widens after recent misses and narrows after hits, using only outcomes already observed. Its step size was chosen on the 1973–2015 backtest. The drought probability is the share of historical errors that, added to today's forecast, would push SPEI-12 below −1.</p>
           </div>
           <div>
             <h3>Limits — read before using</h3>
@@ -145,7 +145,7 @@
               <li><strong>Mostly persistence.</strong> 11 of the 12 months behind next month's SPEI-12 are already known, so most of the 1-month skill is arithmetic, not insight. At 6 months the typical error (about 0.9) is close to the width of a whole drought class.</li>
               <li><strong>No weather forecast inside.</strong> The models never see seasonal rainfall forecasts, NAO/ENSO, soil moisture or NDVI. A sudden wet or dry season will surprise them.</li>
               <li><strong>Wet test period.</strong> 2016–2025 contained only 4 drought months, so drought-detection scores on the test window are statistically weak. The cross-validation backtest (1973–2015) has more than 70.</li>
-              <li><strong>Previous model scored better on the test decade.</strong> The original notebook's Ridge beats the new selected model on 2016–2025 at every horizon, though it lost in cross-validation over 1973–2015. Its year/trend features suit the recent wet drift, but trend extrapolation is a fragile assumption. Details are in the README.</li>
+              <li><strong>Previous model scored better on the test decade.</strong> The original notebook's Ridge beats the new selected model on 2016–2025 at every horizon, though it lost in cross-validation over 1973–2015. Adding its year/decade trend features to the new models helps on 2016–2025 but hurts on the 1973–2015 backtest at every horizon, so they are not used. Details are in the README.</li>
               <li><strong>Data gaps.</strong> The source file is missing SPEI-1 for November 2025 (filled with a causal regression) and SPEI-48 for the last four months (not used).</li>
               <li><strong>Index recalibration.</strong> SPEI values are standardised over the full record by the data provider, so a sliver of future information is baked into historic values.</li>
               <li><strong>Not an official warning.</strong> This is a research tool. For decisions, use national meteorological services.</li>

@@ -77,3 +77,70 @@ def block_bootstrap_rmse(y, preds: dict, block: int = 12, n_boot: int = 2000, se
             if a != b:
                 out["p_lower"][f"{a} < {b}"] = float(np.mean(boot[a] < boot[b]))
     return out
+
+
+def adaptive_conformal(cal_scores, abs_errors, level: float, gamma: float, delay: int):
+    """Adaptive conformal inference (Gibbs & Candes 2021) with delayed feedback.
+
+    cal_scores: out-of-fold |residuals| from the development period (fixed pool).
+    abs_errors: |y - pred| for consecutive monthly forecasts, in time order.
+    The outcome of forecast j is only observed `delay` steps later, so the
+    radius for step i uses feedback from steps <= i - delay only.
+
+    Update: alpha <- alpha + gamma * (target_miss_rate - missed_j). The radius
+    is the (1 - alpha) conformal quantile of cal_scores; alpha <= 0 maps to
+    the largest calibration score, alpha >= 1 to zero.
+
+    Returns (radii per step, radius for the next forecast after all feedback
+    that is observable once the series ends).
+    """
+    cal = np.sort(np.asarray(cal_scores, float))
+    target = 1.0 - level
+
+    def radius(alpha: float) -> float:
+        if alpha <= 1.0 / (len(cal) + 1):
+            return float(cal[-1])
+        if alpha >= 1.0:
+            return 0.0
+        return conformal_quantile(cal, 1.0 - alpha)
+
+    alpha, radii = target, []
+    e = np.asarray(abs_errors, float)
+    for i in range(len(e)):
+        j = i - delay
+        if j >= 0:
+            alpha += gamma * (target - float(e[j] > radii[j]))
+        radii.append(radius(alpha))
+    # Feedback still pending at the end of the series becomes observable
+    # by the time of the next live forecast (the last `delay` outcomes).
+    for j in range(max(0, len(e) - delay), len(e)):
+        alpha += gamma * (target - float(e[j] > radii[j]))
+    return np.array(radii), radius(alpha)
+
+
+def select_gamma(fold_abs_errors: list, level: float, grid, delay: int, window: int = 60) -> tuple[float, list]:
+    """Choose the adaptive-conformal step size on the development period only.
+
+    Each CV fold's out-of-fold errors are treated as a live period, calibrated
+    on the errors of all *earlier* folds, so the procedure faces the regime
+    shifts inside 1973-2015 the way the live system faces new ones. Score:
+    mean |rolling `window`-month coverage - level|; ties (within 0.001) go to
+    the narrower interval. Returns (best gamma, table of all candidates).
+    """
+    rows = []
+    for g in grid:
+        hits, widths = [], []
+        for k in range(1, len(fold_abs_errors)):
+            cal = np.concatenate(fold_abs_errors[:k])
+            e = np.asarray(fold_abs_errors[k], float)
+            r, _ = adaptive_conformal(cal, e, level, g, delay)
+            hits.append((e <= r).astype(float))
+            widths.append(r * 2)
+        hit = np.concatenate(hits)
+        roll = pd.Series(hit).rolling(window).mean().dropna()
+        rows.append({"gamma": float(g), "dev_coverage": float(hit.mean()),
+                     "dev_rolling_mad": float(np.mean(np.abs(roll - level))),
+                     "dev_mean_width": float(np.concatenate(widths).mean())})
+    best_mad = min(x["dev_rolling_mad"] for x in rows)
+    tied = [x for x in rows if x["dev_rolling_mad"] <= best_mad + 1e-3]
+    return min(tied, key=lambda x: x["dev_mean_width"])["gamma"], rows

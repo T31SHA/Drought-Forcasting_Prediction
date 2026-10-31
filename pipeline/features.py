@@ -93,3 +93,15 @@ def season_of(months) -> np.ndarray:
 def regime_of(spei: np.ndarray, thr: float = -1.0) -> np.ndarray:
     v = np.asarray(spei)
     return np.select([v < thr, v > -thr], ["Drought (< -1)", "Wet (> +1)"], "Near normal")
+
+
+TREND_FEATURES = ["year", "decade", "month_since_start"]
+
+
+def add_trend(X: pd.DataFrame, start: pd.Timestamp) -> pd.DataFrame:
+    """The original notebook's calendar-trend features (known at any origin)."""
+    X = X.copy()
+    X["year"] = X.index.year.astype(float)
+    X["decade"] = (X.index.year // 10 * 10).astype(float)
+    X["month_since_start"] = ((X.index.year - start.year) * 12 + X.index.month - start.month).astype(float)
+    return X

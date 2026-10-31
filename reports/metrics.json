@@ -54,7 +54,11 @@
         6,
         12
       ],
-      "drought_threshold": -1.0
+      "drought_threshold": -1.0,
+      "trend_variants": [
+        false,
+        true
+      ]
     },
     "cv": {
       "n_splits": 5,
@@ -112,7 +116,20 @@
       "levels": [
         0.8,
         0.95
-      ]
+      ],
+      "adaptive": {
+        "horizons": [
+          6
+        ],
+        "gamma": "auto",
+        "gamma_grid": [
+          0.005,
+          0.01,
+          0.02,
+          0.05,
+          0.1
+        ]
+      }
     },
     "output": {
       "models_dir": "models",
@@ -246,6 +263,69 @@
       "coverage_95": 0.9224137931034483,
       "interval_width_80": 0.6042936195033004,
       "interval_width_95": 1.016479312049713
+    },
+    {
+      "model": "Ridge +trend",
+      "horizon": 1,
+      "n": 116,
+      "rmse": 0.2329954129343554,
+      "mae": 0.1808698408327704,
+      "r2": 0.9486429127061933,
+      "explained_variance": 0.949858601035656,
+      "bias": -0.035847452861557154,
+      "skill_vs_persistence": 0.5339854875034598,
+      "drought_months": 4,
+      "drought_hits": 3,
+      "drought_misses": 1,
+      "drought_false_alarms": 1,
+      "pod": 0.75,
+      "far": 0.25,
+      "coverage_80": 0.8275862068965517,
+      "coverage_95": 0.9482758620689655,
+      "interval_width_80": 0.5852974823217401,
+      "interval_width_95": 0.998276675592389
+    },
+    {
+      "model": "XGBoost +trend",
+      "horizon": 1,
+      "n": 116,
+      "rmse": 0.28413740055711223,
+      "mae": 0.21541456882342372,
+      "r2": 0.9236230258479396,
+      "explained_variance": 0.9244890919854338,
+      "bias": -0.03025678001968318,
+      "skill_vs_persistence": 0.3069548868335955,
+      "drought_months": 4,
+      "drought_hits": 2,
+      "drought_misses": 2,
+      "drought_false_alarms": 1,
+      "pod": 0.5,
+      "far": 0.3333333333333333,
+      "coverage_80": 0.8103448275862069,
+      "coverage_95": 0.9741379310344828,
+      "interval_width_80": 0.720577557258606,
+      "interval_width_95": 1.2296999916458131
+    },
+    {
+      "model": "Ridge + XGBoost +trend",
+      "horizon": 1,
+      "n": 116,
+      "rmse": 0.24370203144949895,
+      "mae": 0.19212046825130827,
+      "r2": 0.9438145399007826,
+      "explained_variance": 0.9448480249325503,
+      "bias": -0.033052116440620165,
+      "skill_vs_persistence": 0.4901728042375152,
+      "drought_months": 4,
+      "drought_hits": 3,
+      "drought_misses": 1,
+      "drought_false_alarms": 1,
+      "pod": 0.75,
+      "far": 0.25,
+      "coverage_80": 0.8103448275862069,
+      "coverage_95": 0.9482758620689655,
+      "interval_width_80": 0.6091312761563716,
+      "interval_width_95": 1.0213372825600902
     },
     {
       "model": "Previous Ridge",
@@ -395,6 +475,69 @@
       "interval_width_95": 1.8785811573555038
     },
     {
+      "model": "Ridge +trend",
+      "horizon": 3,
+      "n": 116,
+      "rmse": 0.5179145048615194,
+      "mae": 0.40782481880500376,
+      "r2": 0.747146997735036,
+      "explained_variance": 0.7752612751005791,
+      "bias": -0.17269806813336033,
+      "skill_vs_persistence": 0.4932785238008842,
+      "drought_months": 4,
+      "drought_hits": 1,
+      "drought_misses": 3,
+      "drought_false_alarms": 0,
+      "pod": 0.25,
+      "far": 0.0,
+      "coverage_80": 0.8103448275862069,
+      "coverage_95": 0.9482758620689655,
+      "interval_width_80": 1.2597743282879872,
+      "interval_width_95": 2.0396018973779597
+    },
+    {
+      "model": "XGBoost +trend",
+      "horizon": 3,
+      "n": 116,
+      "rmse": 0.6010437724895484,
+      "mae": 0.46938883312006846,
+      "r2": 0.6594631066518183,
+      "explained_variance": 0.6666016809515058,
+      "bias": -0.0870221399774775,
+      "skill_vs_persistence": 0.3175585982687714,
+      "drought_months": 4,
+      "drought_hits": 0,
+      "drought_misses": 4,
+      "drought_false_alarms": 1,
+      "pod": 0.0,
+      "far": 1.0,
+      "coverage_80": 0.7931034482758621,
+      "coverage_95": 0.896551724137931,
+      "interval_width_80": 1.370216845474243,
+      "interval_width_95": 2.109515959630013
+    },
+    {
+      "model": "Ridge + XGBoost +trend",
+      "horizon": 3,
+      "n": 116,
+      "rmse": 0.5376015393329494,
+      "mae": 0.42176095838869865,
+      "r2": 0.7275586814793917,
+      "explained_variance": 0.7434552526715448,
+      "bias": -0.12986010405541892,
+      "skill_vs_persistence": 0.4540232235260073,
+      "drought_months": 4,
+      "drought_hits": 0,
+      "drought_misses": 4,
+      "drought_false_alarms": 1,
+      "pod": 0.0,
+      "far": 1.0,
+      "coverage_80": 0.8189655172413793,
+      "coverage_95": 0.9310344827586207,
+      "interval_width_80": 1.3243897867733725,
+      "interval_width_95": 1.922432758959323
+    },
+    {
       "model": "Previous Ridge",
       "horizon": 3,
       "n": 116,
@@ -542,6 +685,69 @@
       "interval_width_95": 2.557329518568186
     },
     {
+      "model": "Ridge +trend",
+      "horizon": 6,
+      "n": 116,
+      "rmse": 0.8221300318597525,
+      "mae": 0.679881308540547,
+      "r2": 0.3659904002392178,
+      "explained_variance": 0.4980365863638865,
+      "bias": -0.3751936911434367,
+      "skill_vs_persistence": 0.41337032359013426,
+      "drought_months": 4,
+      "drought_hits": 0,
+      "drought_misses": 4,
+      "drought_false_alarms": 0,
+      "pod": 0.0,
+      "far": NaN,
+      "coverage_80": 0.7672413793103449,
+      "coverage_95": 0.9310344827586207,
+      "interval_width_80": 1.8965691219409486,
+      "interval_width_95": 2.849589363812476
+    },
+    {
+      "model": "XGBoost +trend",
+      "horizon": 6,
+      "n": 116,
+      "rmse": 0.8379308728177347,
+      "mae": 0.6512418021256091,
+      "r2": 0.3413856460094896,
+      "explained_variance": 0.3739776814659582,
+      "bias": -0.18640104303024452,
+      "skill_vs_persistence": 0.390604297622427,
+      "drought_months": 4,
+      "drought_hits": 0,
+      "drought_misses": 4,
+      "drought_false_alarms": 1,
+      "pod": 0.0,
+      "far": 1.0,
+      "coverage_80": 0.7758620689655172,
+      "coverage_95": 0.9051724137931034,
+      "interval_width_80": 1.994252506055832,
+      "interval_width_95": 3.0013913023376464
+    },
+    {
+      "model": "Ridge + XGBoost +trend",
+      "horizon": 6,
+      "n": 116,
+      "rmse": 0.8094955829773737,
+      "mae": 0.6538465263500479,
+      "r2": 0.3853275127927167,
+      "explained_variance": 0.4592881885197315,
+      "bias": -0.28079736708684067,
+      "skill_vs_persistence": 0.4312623619508158,
+      "drought_months": 4,
+      "drought_hits": 0,
+      "drought_misses": 4,
+      "drought_false_alarms": 1,
+      "pod": 0.0,
+      "far": 1.0,
+      "coverage_80": 0.7931034482758621,
+      "coverage_95": 0.896551724137931,
+      "interval_width_80": 1.87256581866085,
+      "interval_width_95": 2.8415220817540923
+    },
+    {
       "model": "Previous Ridge",
       "horizon": 6,
       "n": 116,
@@ -667,6 +873,57 @@
       "far": 0.15625
     },
     {
+      "model": "Ridge +trend",
+      "horizon": 1,
+      "n": 515,
+      "rmse": 0.24240003853190273,
+      "mae": 0.18432205466738422,
+      "r2": 0.9345212736179535,
+      "explained_variance": 0.9345722088657086,
+      "bias": 0.006760701858165379,
+      "skill_vs_persistence": 0.5052876674948915,
+      "drought_months": 78,
+      "drought_hits": 60,
+      "drought_misses": 18,
+      "drought_false_alarms": 7,
+      "pod": 0.7692307692307693,
+      "far": 0.1044776119402985
+    },
+    {
+      "model": "XGBoost +trend",
+      "horizon": 1,
+      "n": 515,
+      "rmse": 0.3054835625780277,
+      "mae": 0.23231064065235202,
+      "r2": 0.896005457699983,
+      "explained_variance": 0.8965868206899616,
+      "bias": 0.022840534522757083,
+      "skill_vs_persistence": 0.2142885875808851,
+      "drought_months": 78,
+      "drought_hits": 49,
+      "drought_misses": 29,
+      "drought_false_alarms": 7,
+      "pod": 0.6282051282051282,
+      "far": 0.125
+    },
+    {
+      "model": "Ridge + XGBoost +trend",
+      "horizon": 1,
+      "n": 515,
+      "rmse": 0.25909043388361497,
+      "mae": 0.19732708517771771,
+      "r2": 0.9251937970879452,
+      "explained_variance": 0.9254379121435568,
+      "bias": 0.014800618190461232,
+      "skill_vs_persistence": 0.4348156542852365,
+      "drought_months": 78,
+      "drought_hits": 55,
+      "drought_misses": 23,
+      "drought_false_alarms": 7,
+      "pod": 0.7051282051282052,
+      "far": 0.11290322580645161
+    },
+    {
       "model": "Previous Ridge",
       "horizon": 1,
       "n": 515,
@@ -784,6 +1041,57 @@
       "drought_false_alarms": 12,
       "pod": 0.30666666666666664,
       "far": 0.34285714285714286
+    },
+    {
+      "model": "Ridge +trend",
+      "horizon": 3,
+      "n": 510,
+      "rmse": 0.4960650012480785,
+      "mae": 0.39436177038666875,
+      "r2": 0.7244742805526868,
+      "explained_variance": 0.7261526744472993,
+      "bias": 0.038717246225735504,
+      "skill_vs_persistence": 0.4268594273317181,
+      "drought_months": 75,
+      "drought_hits": 24,
+      "drought_misses": 51,
+      "drought_false_alarms": 11,
+      "pod": 0.32,
+      "far": 0.3142857142857143
+    },
+    {
+      "model": "XGBoost +trend",
+      "horizon": 3,
+      "n": 510,
+      "rmse": 0.5401915562679843,
+      "mae": 0.42935578801497726,
+      "r2": 0.673276364347211,
+      "explained_variance": 0.6736440133195811,
+      "bias": 0.018120667567756772,
+      "skill_vs_persistence": 0.32035901396816535,
+      "drought_months": 75,
+      "drought_hits": 22,
+      "drought_misses": 53,
+      "drought_false_alarms": 15,
+      "pod": 0.29333333333333333,
+      "far": 0.40540540540540543
+    },
+    {
+      "model": "Ridge + XGBoost +trend",
+      "horizon": 3,
+      "n": 510,
+      "rmse": 0.4992345864746609,
+      "mae": 0.39762630999640625,
+      "r2": 0.7209421135559817,
+      "explained_variance": 0.721846390039625,
+      "bias": 0.02841895689674614,
+      "skill_vs_persistence": 0.4195119164738845,
+      "drought_months": 75,
+      "drought_hits": 20,
+      "drought_misses": 55,
+      "drought_false_alarms": 11,
+      "pod": 0.26666666666666666,
+      "far": 0.3548387096774194
     },
     {
       "model": "Previous Ridge",
@@ -905,6 +1213,57 @@
       "far": 0.3888888888888889
     },
     {
+      "model": "Ridge +trend",
+      "horizon": 6,
+      "n": 505,
+      "rmse": 0.722665468973843,
+      "mae": 0.5935900446353292,
+      "r2": 0.4085147053693692,
+      "explained_variance": 0.40852731046898183,
+      "bias": 0.0033360954550662814,
+      "skill_vs_persistence": 0.441627487713961,
+      "drought_months": 71,
+      "drought_hits": 12,
+      "drought_misses": 59,
+      "drought_false_alarms": 11,
+      "pod": 0.16901408450704225,
+      "far": 0.4782608695652174
+    },
+    {
+      "model": "XGBoost +trend",
+      "horizon": 6,
+      "n": 505,
+      "rmse": 0.756284562762207,
+      "mae": 0.6238153923797026,
+      "r2": 0.35220168146307484,
+      "explained_variance": 0.3522570645620421,
+      "bias": 0.006992845838083815,
+      "skill_vs_persistence": 0.3884670035592075,
+      "drought_months": 71,
+      "drought_hits": 5,
+      "drought_misses": 66,
+      "drought_false_alarms": 9,
+      "pod": 0.07042253521126761,
+      "far": 0.6428571428571429
+    },
+    {
+      "model": "Ridge + XGBoost +trend",
+      "horizon": 6,
+      "n": 505,
+      "rmse": 0.7292343775659343,
+      "mae": 0.6009207290371041,
+      "r2": 0.3977128284874498,
+      "explained_variance": 0.39774303641783126,
+      "bias": 0.005164470646575055,
+      "skill_vs_persistence": 0.43143032611634535,
+      "drought_months": 71,
+      "drought_hits": 8,
+      "drought_misses": 63,
+      "drought_false_alarms": 8,
+      "pod": 0.11267605633802817,
+      "far": 0.5
+    },
+    {
       "model": "Previous Ridge",
       "horizon": 6,
       "n": 505,
@@ -961,42 +1320,87 @@
   },
   "best_params": {
     "1": {
-      "ridge_alpha": 0.01,
-      "xgboost": {
-        "n_estimators": 450,
-        "max_depth": 2,
-        "learning_rate": 0.11643534252203425,
-        "subsample": 0.9968870152623768,
-        "colsample_bytree": 0.8836205615779098,
-        "min_child_weight": 19,
-        "reg_lambda": 0.11877528870694312,
-        "reg_alpha": 0.8835358787203331
+      "base": {
+        "ridge_alpha": 0.01,
+        "xgboost": {
+          "n_estimators": 450,
+          "max_depth": 2,
+          "learning_rate": 0.11643534252203425,
+          "subsample": 0.9968870152623768,
+          "colsample_bytree": 0.8836205615779098,
+          "min_child_weight": 19,
+          "reg_lambda": 0.11877528870694312,
+          "reg_alpha": 0.8835358787203331
+        }
+      },
+      "trend": {
+        "ridge_alpha": 0.01,
+        "xgboost": {
+          "n_estimators": 800,
+          "max_depth": 2,
+          "learning_rate": 0.02199355806475732,
+          "subsample": 0.9017649847845134,
+          "colsample_bytree": 0.8108767365707598,
+          "min_child_weight": 18,
+          "reg_lambda": 0.6549456911567522,
+          "reg_alpha": 0.00013036921481675436
+        }
       }
     },
     "3": {
-      "ridge_alpha": 10.0,
-      "xgboost": {
-        "n_estimators": 350,
-        "max_depth": 3,
-        "learning_rate": 0.017539605310631964,
-        "subsample": 0.8083212117439459,
-        "colsample_bytree": 0.8216195198802578,
-        "min_child_weight": 20,
-        "reg_lambda": 5.8570621474889375,
-        "reg_alpha": 2.2402550572086306
+      "base": {
+        "ridge_alpha": 10.0,
+        "xgboost": {
+          "n_estimators": 350,
+          "max_depth": 3,
+          "learning_rate": 0.017539605310631964,
+          "subsample": 0.8083212117439459,
+          "colsample_bytree": 0.8216195198802578,
+          "min_child_weight": 20,
+          "reg_lambda": 5.8570621474889375,
+          "reg_alpha": 2.2402550572086306
+        }
+      },
+      "trend": {
+        "ridge_alpha": 10.0,
+        "xgboost": {
+          "n_estimators": 150,
+          "max_depth": 5,
+          "learning_rate": 0.013394483670621253,
+          "subsample": 0.797061394936803,
+          "colsample_bytree": 0.6195636665258615,
+          "min_child_weight": 20,
+          "reg_lambda": 0.22430693971100343,
+          "reg_alpha": 0.17360883269540406
+        }
       }
     },
     "6": {
-      "ridge_alpha": 30.0,
-      "xgboost": {
-        "n_estimators": 200,
-        "max_depth": 2,
-        "learning_rate": 0.030528315671300137,
-        "subsample": 0.6007877630882815,
-        "colsample_bytree": 0.6155916531981704,
-        "min_child_weight": 1,
-        "reg_lambda": 3.45428383653816,
-        "reg_alpha": 4.1032904377408235
+      "base": {
+        "ridge_alpha": 30.0,
+        "xgboost": {
+          "n_estimators": 200,
+          "max_depth": 2,
+          "learning_rate": 0.030528315671300137,
+          "subsample": 0.6007877630882815,
+          "colsample_bytree": 0.6155916531981704,
+          "min_child_weight": 1,
+          "reg_lambda": 3.45428383653816,
+          "reg_alpha": 4.1032904377408235
+        }
+      },
+      "trend": {
+        "ridge_alpha": 300.0,
+        "xgboost": {
+          "n_estimators": 250,
+          "max_depth": 2,
+          "learning_rate": 0.013994020653150117,
+          "subsample": 0.6033261079327391,
+          "colsample_bytree": 0.7211710967451027,
+          "min_child_weight": 11,
+          "reg_lambda": 19.87444603153286,
+          "reg_alpha": 0.004357206611367306
+        }
       }
     }
   },
@@ -1019,6 +1423,18 @@
           0.22216812788691362,
           0.2830478927643355
         ],
+        "Ridge +trend": [
+          0.20313937454347739,
+          0.26870337434961367
+        ],
+        "XGBoost +trend": [
+          0.2544005771628097,
+          0.3318046197331146
+        ],
+        "Ridge + XGBoost +trend": [
+          0.2217987584695031,
+          0.2755426478959542
+        ],
         "Previous Ridge": [
           0.20233955280496332,
           0.25928203463400573
@@ -1028,23 +1444,59 @@
         "Persistence < Ridge": 0.0,
         "Persistence < XGBoost": 0.0,
         "Persistence < Ridge + XGBoost": 0.0,
+        "Persistence < Ridge +trend": 0.0,
+        "Persistence < XGBoost +trend": 0.0,
+        "Persistence < Ridge + XGBoost +trend": 0.0,
         "Persistence < Previous Ridge": 0.0,
         "Ridge < Persistence": 1.0,
         "Ridge < XGBoost": 0.9825,
         "Ridge < Ridge + XGBoost": 0.872,
+        "Ridge < Ridge +trend": 0.023,
+        "Ridge < XGBoost +trend": 0.9735,
+        "Ridge < Ridge + XGBoost +trend": 0.7185,
         "Ridge < Previous Ridge": 0.0675,
         "XGBoost < Persistence": 1.0,
         "XGBoost < Ridge": 0.0175,
         "XGBoost < Ridge + XGBoost": 0.0,
+        "XGBoost < Ridge +trend": 0.0045,
+        "XGBoost < XGBoost +trend": 0.5745,
+        "XGBoost < Ridge + XGBoost +trend": 0.0,
         "XGBoost < Previous Ridge": 0.0015,
         "Ridge + XGBoost < Persistence": 1.0,
         "Ridge + XGBoost < Ridge": 0.128,
         "Ridge + XGBoost < XGBoost": 1.0,
+        "Ridge + XGBoost < Ridge +trend": 0.047,
+        "Ridge + XGBoost < XGBoost +trend": 0.9875,
+        "Ridge + XGBoost < Ridge + XGBoost +trend": 0.1315,
         "Ridge + XGBoost < Previous Ridge": 0.013,
+        "Ridge +trend < Persistence": 1.0,
+        "Ridge +trend < Ridge": 0.977,
+        "Ridge +trend < XGBoost": 0.9955,
+        "Ridge +trend < Ridge + XGBoost": 0.953,
+        "Ridge +trend < XGBoost +trend": 0.9855,
+        "Ridge +trend < Ridge + XGBoost +trend": 0.8515,
+        "Ridge +trend < Previous Ridge": 0.179,
+        "XGBoost +trend < Persistence": 1.0,
+        "XGBoost +trend < Ridge": 0.0265,
+        "XGBoost +trend < XGBoost": 0.4255,
+        "XGBoost +trend < Ridge + XGBoost": 0.0125,
+        "XGBoost +trend < Ridge +trend": 0.0145,
+        "XGBoost +trend < Ridge + XGBoost +trend": 0.0,
+        "XGBoost +trend < Previous Ridge": 0.0025,
+        "Ridge + XGBoost +trend < Persistence": 1.0,
+        "Ridge + XGBoost +trend < Ridge": 0.2815,
+        "Ridge + XGBoost +trend < XGBoost": 1.0,
+        "Ridge + XGBoost +trend < Ridge + XGBoost": 0.8685,
+        "Ridge + XGBoost +trend < Ridge +trend": 0.1485,
+        "Ridge + XGBoost +trend < XGBoost +trend": 1.0,
+        "Ridge + XGBoost +trend < Previous Ridge": 0.0445,
         "Previous Ridge < Persistence": 1.0,
         "Previous Ridge < Ridge": 0.9325,
         "Previous Ridge < XGBoost": 0.9985,
-        "Previous Ridge < Ridge + XGBoost": 0.987
+        "Previous Ridge < Ridge + XGBoost": 0.987,
+        "Previous Ridge < Ridge +trend": 0.821,
+        "Previous Ridge < XGBoost +trend": 0.9975,
+        "Previous Ridge < Ridge + XGBoost +trend": 0.9555
       }
     },
     "3": {
@@ -1065,6 +1517,18 @@
           0.4680331773570809,
           0.6717338698879005
         ],
+        "Ridge +trend": [
+          0.44950204535361044,
+          0.617329209003374
+        ],
+        "XGBoost +trend": [
+          0.5292687464248201,
+          0.7118135828137279
+        ],
+        "Ridge + XGBoost +trend": [
+          0.46772260281992367,
+          0.6387553688186619
+        ],
         "Previous Ridge": [
           0.42704890873156415,
           0.5558571317852277
@@ -1074,23 +1538,59 @@
         "Persistence < Ridge": 0.003,
         "Persistence < XGBoost": 0.008,
         "Persistence < Ridge + XGBoost": 0.0015,
+        "Persistence < Ridge +trend": 0.0,
+        "Persistence < XGBoost +trend": 0.002,
+        "Persistence < Ridge + XGBoost +trend": 0.0,
         "Persistence < Previous Ridge": 0.0,
         "Ridge < Persistence": 0.997,
         "Ridge < XGBoost": 0.97,
         "Ridge < Ridge + XGBoost": 0.7765,
+        "Ridge < Ridge +trend": 0.008,
+        "Ridge < XGBoost +trend": 0.9275,
+        "Ridge < Ridge + XGBoost +trend": 0.402,
         "Ridge < Previous Ridge": 0.016,
         "XGBoost < Persistence": 0.992,
         "XGBoost < Ridge": 0.03,
         "XGBoost < Ridge + XGBoost": 0.001,
+        "XGBoost < Ridge +trend": 0.004,
+        "XGBoost < XGBoost +trend": 0.384,
+        "XGBoost < Ridge + XGBoost +trend": 0.0,
         "XGBoost < Previous Ridge": 0.0005,
         "Ridge + XGBoost < Persistence": 0.9985,
         "Ridge + XGBoost < Ridge": 0.2235,
         "Ridge + XGBoost < XGBoost": 0.999,
+        "Ridge + XGBoost < Ridge +trend": 0.0215,
+        "Ridge + XGBoost < XGBoost +trend": 0.948,
+        "Ridge + XGBoost < Ridge + XGBoost +trend": 0.112,
         "Ridge + XGBoost < Previous Ridge": 0.006,
+        "Ridge +trend < Persistence": 1.0,
+        "Ridge +trend < Ridge": 0.992,
+        "Ridge +trend < XGBoost": 0.996,
+        "Ridge +trend < Ridge + XGBoost": 0.9785,
+        "Ridge +trend < XGBoost +trend": 0.991,
+        "Ridge +trend < Ridge + XGBoost +trend": 0.8855,
+        "Ridge +trend < Previous Ridge": 0.037,
+        "XGBoost +trend < Persistence": 0.998,
+        "XGBoost +trend < Ridge": 0.0725,
+        "XGBoost +trend < XGBoost": 0.616,
+        "XGBoost +trend < Ridge + XGBoost": 0.052,
+        "XGBoost +trend < Ridge +trend": 0.009,
+        "XGBoost +trend < Ridge + XGBoost +trend": 0.0,
+        "XGBoost +trend < Previous Ridge": 0.0005,
+        "Ridge + XGBoost +trend < Persistence": 1.0,
+        "Ridge + XGBoost +trend < Ridge": 0.598,
+        "Ridge + XGBoost +trend < XGBoost": 1.0,
+        "Ridge + XGBoost +trend < Ridge + XGBoost": 0.888,
+        "Ridge + XGBoost +trend < Ridge +trend": 0.1145,
+        "Ridge + XGBoost +trend < XGBoost +trend": 1.0,
+        "Ridge + XGBoost +trend < Previous Ridge": 0.005,
         "Previous Ridge < Persistence": 1.0,
         "Previous Ridge < Ridge": 0.984,
         "Previous Ridge < XGBoost": 0.9995,
-        "Previous Ridge < Ridge + XGBoost": 0.994
+        "Previous Ridge < Ridge + XGBoost": 0.994,
+        "Previous Ridge < Ridge +trend": 0.963,
+        "Previous Ridge < XGBoost +trend": 0.9995,
+        "Previous Ridge < Ridge + XGBoost +trend": 0.995
       }
     },
     "6": {
@@ -1111,6 +1611,18 @@
           0.6752647757220471,
           1.0710026041308567
         ],
+        "Ridge +trend": [
+          0.6729500889447413,
+          0.9960014343385127
+        ],
+        "XGBoost +trend": [
+          0.6651966669467951,
+          1.0428627224585196
+        ],
+        "Ridge + XGBoost +trend": [
+          0.6453183833756079,
+          0.9994786801925445
+        ],
         "Previous Ridge": [
           0.6226883712391824,
           0.7949969699822111
@@ -1120,24 +1632,259 @@
         "Persistence < Ridge": 0.077,
         "Persistence < XGBoost": 0.0175,
         "Persistence < Ridge + XGBoost": 0.022,
+        "Persistence < Ridge +trend": 0.0075,
+        "Persistence < XGBoost +trend": 0.003,
+        "Persistence < Ridge + XGBoost +trend": 0.0025,
         "Persistence < Previous Ridge": 0.0,
         "Ridge < Persistence": 0.923,
         "Ridge < XGBoost": 0.277,
         "Ridge < Ridge + XGBoost": 0.094,
+        "Ridge < Ridge +trend": 0.009,
+        "Ridge < XGBoost +trend": 0.1935,
+        "Ridge < Ridge + XGBoost +trend": 0.051,
         "Ridge < Previous Ridge": 0.0155,
         "XGBoost < Persistence": 0.9825,
         "XGBoost < Ridge": 0.723,
         "XGBoost < Ridge + XGBoost": 0.3975,
+        "XGBoost < Ridge +trend": 0.1445,
+        "XGBoost < XGBoost +trend": 0.1815,
+        "XGBoost < Ridge + XGBoost +trend": 0.0205,
         "XGBoost < Previous Ridge": 0.037,
         "Ridge + XGBoost < Persistence": 0.978,
         "Ridge + XGBoost < Ridge": 0.906,
         "Ridge + XGBoost < XGBoost": 0.6025,
+        "Ridge + XGBoost < Ridge +trend": 0.081,
+        "Ridge + XGBoost < XGBoost +trend": 0.3655,
+        "Ridge + XGBoost < Ridge + XGBoost +trend": 0.0565,
         "Ridge + XGBoost < Previous Ridge": 0.044,
+        "Ridge +trend < Persistence": 0.9925,
+        "Ridge +trend < Ridge": 0.991,
+        "Ridge +trend < XGBoost": 0.8555,
+        "Ridge +trend < Ridge + XGBoost": 0.919,
+        "Ridge +trend < XGBoost +trend": 0.6855,
+        "Ridge +trend < Ridge + XGBoost +trend": 0.376,
+        "Ridge +trend < Previous Ridge": 0.049,
+        "XGBoost +trend < Persistence": 0.997,
+        "XGBoost +trend < Ridge": 0.8065,
+        "XGBoost +trend < XGBoost": 0.8185,
+        "XGBoost +trend < Ridge + XGBoost": 0.6345,
+        "XGBoost +trend < Ridge +trend": 0.3145,
+        "XGBoost +trend < Ridge + XGBoost +trend": 0.115,
+        "XGBoost +trend < Previous Ridge": 0.033,
+        "Ridge + XGBoost +trend < Persistence": 0.9975,
+        "Ridge + XGBoost +trend < Ridge": 0.949,
+        "Ridge + XGBoost +trend < XGBoost": 0.9795,
+        "Ridge + XGBoost +trend < Ridge + XGBoost": 0.9435,
+        "Ridge + XGBoost +trend < Ridge +trend": 0.624,
+        "Ridge + XGBoost +trend < XGBoost +trend": 0.885,
+        "Ridge + XGBoost +trend < Previous Ridge": 0.0585,
         "Previous Ridge < Persistence": 1.0,
         "Previous Ridge < Ridge": 0.9845,
         "Previous Ridge < XGBoost": 0.963,
-        "Previous Ridge < Ridge + XGBoost": 0.956
+        "Previous Ridge < Ridge + XGBoost": 0.956,
+        "Previous Ridge < Ridge +trend": 0.951,
+        "Previous Ridge < XGBoost +trend": 0.967,
+        "Previous Ridge < Ridge + XGBoost +trend": 0.9415
       }
+    }
+  },
+  "intervals_test": [
+    {
+      "horizon": 1,
+      "model": "Ridge",
+      "method": "static split-conformal",
+      "gamma": NaN,
+      "level": 0.8,
+      "coverage": 0.7844827586206896,
+      "mean_width": 0.5652714084115362,
+      "live_width": 0.5652714084115362
+    },
+    {
+      "horizon": 1,
+      "model": "Ridge",
+      "method": "static split-conformal",
+      "gamma": NaN,
+      "level": 0.95,
+      "coverage": 0.9224137931034483,
+      "mean_width": 0.9881329534490513,
+      "live_width": 0.9881329534490513
+    },
+    {
+      "horizon": 3,
+      "model": "Ridge",
+      "method": "static split-conformal",
+      "gamma": NaN,
+      "level": 0.8,
+      "coverage": 0.7241379310344828,
+      "mean_width": 1.1813211757695,
+      "live_width": 1.1813211757695
+    },
+    {
+      "horizon": 3,
+      "model": "Ridge",
+      "method": "static split-conformal",
+      "gamma": NaN,
+      "level": 0.95,
+      "coverage": 0.9310344827586207,
+      "mean_width": 1.8710571637141635,
+      "live_width": 1.8710571637141635
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "static split-conformal",
+      "gamma": NaN,
+      "level": 0.8,
+      "coverage": 0.6293103448275862,
+      "mean_width": 1.7657971851585208,
+      "live_width": 1.7657971851585208
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.005,
+      "level": 0.8,
+      "coverage": 0.7068965517241379,
+      "mean_width": 1.8638879933837904,
+      "live_width": 1.977692588512703
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.01,
+      "level": 0.8,
+      "coverage": 0.7327586206896551,
+      "mean_width": 1.9889900753269674,
+      "live_width": 2.1108471043520334
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.02,
+      "level": 0.8,
+      "coverage": 0.7758620689655172,
+      "mean_width": 2.1870210263464482,
+      "live_width": 1.980715718107381
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.05,
+      "level": 0.8,
+      "coverage": 0.7931034482758621,
+      "mean_width": 2.5672665300121547,
+      "live_width": 1.8987385835562378
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.1,
+      "level": 0.8,
+      "coverage": 0.7931034482758621,
+      "mean_width": 2.606137611806597,
+      "live_width": 2.1134766001210177
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "static split-conformal",
+      "gamma": NaN,
+      "level": 0.95,
+      "coverage": 0.8448275862068966,
+      "mean_width": 2.5960135113379383,
+      "live_width": 2.5960135113379383
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.005,
+      "level": 0.95,
+      "coverage": 0.896551724137931,
+      "mean_width": 2.98414797290633,
+      "live_width": 3.178339492783184
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.01,
+      "level": 0.95,
+      "coverage": 0.9137931034482759,
+      "mean_width": 3.4305637117622054,
+      "live_width": 3.4037532820223024
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.02,
+      "level": 0.95,
+      "coverage": 0.9224137931034483,
+      "mean_width": 3.478888891233695,
+      "live_width": 3.985460710889741
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.05,
+      "level": 0.95,
+      "coverage": 0.9482758620689655,
+      "mean_width": 3.5202173386116504,
+      "live_width": 2.7009551265269374
+    },
+    {
+      "horizon": 6,
+      "model": "Ridge",
+      "method": "adaptive conformal",
+      "gamma": 0.1,
+      "level": 0.95,
+      "coverage": 0.9396551724137931,
+      "mean_width": 3.5634987240973843,
+      "live_width": 3.985460710889741
+    }
+  ],
+  "adaptive_gamma": {
+    "6": {
+      "gamma": 0.05,
+      "candidates": [
+        {
+          "gamma": 0.005,
+          "dev_coverage": 0.8514851485148515,
+          "dev_rolling_mad": 0.056859903381642485,
+          "dev_mean_width": 1.872938334898769
+        },
+        {
+          "gamma": 0.01,
+          "dev_coverage": 0.8391089108910891,
+          "dev_rolling_mad": 0.049033816425120745,
+          "dev_mean_width": 1.8438732863081961
+        },
+        {
+          "gamma": 0.02,
+          "dev_coverage": 0.8316831683168316,
+          "dev_rolling_mad": 0.04352657004830916,
+          "dev_mean_width": 1.8082054238608394
+        },
+        {
+          "gamma": 0.05,
+          "dev_coverage": 0.8118811881188119,
+          "dev_rolling_mad": 0.036473429951690825,
+          "dev_mean_width": 1.7480204572076936
+        },
+        {
+          "gamma": 0.1,
+          "dev_coverage": 0.7970297029702971,
+          "dev_rolling_mad": 0.0356521739130435,
+          "dev_mean_width": 1.8872758403205419
+        }
+      ]
     }
   }
 }

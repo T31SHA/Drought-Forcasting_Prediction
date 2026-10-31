@@ -32,6 +32,11 @@ features:
   short_lags: [1, 2, 3]            # SPEI-1 lags (recent monthly water balance)
   rolling_windows: [3, 6, 12]      # rolling mean/std of SPEI-1 (SPI-style accumulations)
   drought_threshold: -1.0
+  # The original notebook's calendar-trend features (year, decade, months
+  # since Jan 1950). Every listed variant is tuned and scored on the same
+  # 1973-2015 backtest folds; the lowest backtest RMSE wins (the 2016-2025
+  # test years are never used to choose). Use [false] or [true] to force one.
+  trend_variants: [false, true]
 
 cv:
   n_splits: 5
@@ -52,6 +57,18 @@ search:
 
 intervals:
   levels: [0.8, 0.95]
+  # Adaptive conformal inference (Gibbs & Candes 2021) for these horizons:
+  # before each forecast the interval level is nudged by the coverage of
+  # outcomes already observed (feedback arrives h months late), so the range
+  # widens after misses and narrows after hits.
+  # gamma (step size) = "auto": chosen on the 1973-2015 backtest only. Each CV
+  # fold is replayed as a live period calibrated on earlier folds; the gamma
+  # whose rolling 60-month 80% coverage stays closest to 80% wins. The
+  # 2016-2025 test years are not used. A number here fixes gamma instead.
+  adaptive:
+    horizons: [6]
+    gamma: auto
+    gamma_grid: [0.005, 0.01, 0.02, 0.05, 0.1]
 
 output:
   models_dir: models

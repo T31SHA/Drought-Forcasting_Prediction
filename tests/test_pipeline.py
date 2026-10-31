@@ -51,3 +51,29 @@ def test_spei1_imputation_is_causal():
     part, _ = fill_spei1_gaps(DF.loc[:"2025-11-01"])
     assert full.loc["2025-11-01", "SPEI_1"] == part.loc["2025-11-01", "SPEI_1"]
     assert full["SPEI_1"].notna().all()
+
+
+def test_trend_features_match_original_notebook():
+    from pipeline.features import add_trend
+    from pipeline.legacy import legacy_frame
+
+    X = add_trend(build_features(DF, CFG), DF.index[0])
+    lf, _ = legacy_frame(DF)
+    for c in ["year", "decade", "month_since_start"]:
+        assert (X.loc[lf.index, c].to_numpy() == lf[c].to_numpy()).all()
+
+
+def test_adaptive_conformal_uses_only_observed_outcomes():
+    from pipeline.evaluate import adaptive_conformal
+
+    cal = np.linspace(0.01, 1.0, 100)
+    err = np.r_[np.full(20, 5.0), np.zeros(20)]
+    r1, _ = adaptive_conformal(cal, err, 0.8, 0.05, delay=6)
+    # The first `delay` radii cannot react to anything yet.
+    assert np.allclose(r1[:6], r1[0])
+    # Changing errors after step i must not change radii up to i + delay.
+    err2 = err.copy(); err2[30:] = 9.0
+    r2, _ = adaptive_conformal(cal, err2, 0.8, 0.05, delay=6)
+    assert np.allclose(r1[:36], r2[:36])
+    # Misses widen the interval.
+    assert r1[19] > r1[0]

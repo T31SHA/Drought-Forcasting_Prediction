@@ -157,7 +157,10 @@ function initHistory() {
 }
 
 // ---- Performance ---------------------------------------------------------
-const MODEL_ORDER = ["Persistence", "Climatology", "Damped persistence", "Ridge", "XGBoost", "Ridge + XGBoost", "Previous Ridge"];
+const TREND = " +trend";
+const MODEL_ORDER = ["Persistence", "Climatology", "Damped persistence"]
+  .concat(...["Ridge", "XGBoost", "Ridge + XGBoost"].map((m) => [m, m + TREND]))
+  .concat("Previous Ridge");
 const MODEL_NOTE: Record<string, string> = {
   Persistence: "next = today",
   Climatology: "monthly average",
@@ -167,6 +170,8 @@ const MODEL_NOTE: Record<string, string> = {
   "Ridge + XGBoost": "equal-weight average",
   "Previous Ridge": "before this update · original code",
 };
+const modelNote = (m: string) =>
+  m.endsWith(TREND) ? `${MODEL_NOTE[m.slice(0, -TREND.length)]} + year/decade trend` : (MODEL_NOTE[m] ?? "");
 
 function renderPerformance(h: number) {
   const bt = data.backtest[String(h)];
@@ -175,6 +180,9 @@ function renderPerformance(h: number) {
   const s = rows.find((m) => m.model === sel)!;
   const pers = rows.find((m) => m.model === "Persistence")!;
   const prev = rows.find((m) => m.model === "Previous Ridge");
+  // Coverage of the intervals actually drawn (adaptive or static).
+  const btPred = bt.predictions[sel];
+  const shownCoverage = bt.observed.filter((o, i) => Math.abs(o - btPred[i]) <= bt.radius["80"][i]).length / bt.observed.length;
   const boot = data.bootstrap[String(h)];
   const skillCls = s.skill_vs_persistence > 0 ? "delta-good" : s.skill_vs_persistence < 0 ? "delta-bad" : "";
 
@@ -183,18 +191,19 @@ function renderPerformance(h: number) {
     <div class="stat"><div class="stat-label">Typical error (RMSE)</div><div class="stat-value">${fmt(s.rmse, 3)}</div><div class="stat-note">persistence ${fmt(pers.rmse, 3)}</div></div>
     <div class="stat"><div class="stat-label">Skill vs persistence</div><div class="stat-value ${skillCls}">${fmtSigned(s.skill_vs_persistence * 100, 0)}%</div><div class="stat-note">${s.skill_vs_persistence >= 0 ? "less squared error than persistence" : "more squared error than persistence"}</div></div>
     ${prev ? `<div class="stat"><div class="stat-label">vs previous version</div><div class="stat-value ${prev.rmse < s.rmse ? "delta-bad" : "delta-good"}">${fmt(prev.rmse, 3)}</div><div class="stat-note">${prev.rmse < s.rmse ? `previous Ridge was better here (lower RMSE in ${pct(boot.p_lower[`Previous Ridge < ${sel}`] ?? null)} of bootstrap resamples)` : "previous Ridge was worse here"}</div></div>` : ""}
-    <div class="stat"><div class="stat-label">80% interval coverage</div><div class="stat-value">${pct(s.coverage_80)}</div><div class="stat-note">target 80% · R² ${fmt(s.r2, 2)}</div></div>`;
+    <div class="stat"><div class="stat-label">80% interval coverage</div><div class="stat-value">${pct(shownCoverage)}</div><div class="stat-note">target 80%${bt.interval_method === "adaptive conformal" ? " · adaptive range" : ""} · R² ${fmt(s.r2, 2)}</div></div>`;
 
   $("backtest-h").textContent = hLabel(h);
   $("backtest-title").textContent = `Backtest, ${hLabel(h)} ahead`;
   const pred = bt.predictions[sel];
   const r80 = bt.radius["80"];
+  const adaptive = bt.interval_method === "adaptive conformal";
   lineChart($("chart-backtest"), {
     months: bt.dates,
     height: 300,
     title: `Backtest ${hLabel(h)} ahead, ${fmtMonth(bt.dates[0])} to ${fmtMonth(bt.dates[bt.dates.length - 1])}`,
     desc: `Observed SPEI-12 compared with ${sel} forecasts made ${hLabel(h)} earlier and the persistence baseline. RMSE ${fmt(s.rmse, 3)} versus ${fmt(pers.rmse, 3)} for persistence.`,
-    bands: [{ label: "80% interval", lo: pred.map((p) => p - r80), hi: pred.map((p) => p + r80), fill: "var(--band-80)" }],
+    bands: [{ label: "80% interval", lo: pred.map((p, i) => p - r80[i]), hi: pred.map((p, i) => p + r80[i]), fill: "var(--band-80)" }],
     series: [
       ...(sel === "Persistence" ? [] : [{ label: "Persistence", color: "var(--s-baseline)", values: bt.predictions["Persistence"], width: 1.5 }]),
       { label: "Observed", color: "var(--s-observed)", values: bt.observed },
@@ -210,10 +219,12 @@ function renderPerformance(h: number) {
   const sorted = MODEL_ORDER.map((name) => rows.find((m) => m.model === name)).filter(Boolean) as Metric[];
   const best = Math.min(...sorted.map((m) => m.rmse));
   const tr = (m: Metric) => `<tr class="${m.model === sel ? "selected" : ""}">
-      <th scope="row">${m.model}${m.model === sel ? '<span class="tag">selected</span>' : ""}${m.rmse === best ? '<span class="tag">lowest RMSE</span>' : ""}<br><span class="muted" style="font-weight:400;font-size:.8rem">${MODEL_NOTE[m.model] ?? ""}</span></th>
+      <th scope="row">${m.model}${m.model === sel ? '<span class="tag">selected</span>' : ""}${m.rmse === best ? '<span class="tag">lowest RMSE</span>' : ""}<br><span class="muted" style="font-weight:400;font-size:.8rem">${modelNote(m.model)}</span></th>
       <td>${fmt(m.rmse, 3)}</td><td>${fmt(m.mae, 3)}</td><td>${fmt(m.r2, 3)}</td><td>${fmt(m.explained_variance, 3)}</td><td>${fmtSigned(m.bias, 3)}</td>
       <td class="${m.skill_vs_persistence > 0.0005 ? "delta-good" : m.skill_vs_persistence < -0.0005 ? "delta-bad" : ""}">${m.model === "Persistence" ? "0 (ref.)" : fmtSigned(m.skill_vs_persistence * 100, 1) + "%"}</td>
-      <td>${m.coverage_80 == null ? "—" : pct(m.coverage_80)}</td></tr>`;
+      <td>${m.model === sel && bt.interval_method === "adaptive conformal"
+        ? `${pct(shownCoverage)} <span class="muted" style="font-weight:400">(adaptive; static ${pct(m.coverage_80)})</span>`
+        : m.coverage_80 == null ? "—" : pct(m.coverage_80)}</td></tr>`;
   $("table-metrics").innerHTML = `<table><thead><tr><th scope="col">Method</th><th scope="col">RMSE</th><th scope="col">MAE</th><th scope="col">R²</th><th scope="col">Expl. var.</th><th scope="col">Bias</th><th scope="col">Skill vs persistence</th><th scope="col">80% PI coverage</th></tr></thead>
     <tbody>${sorted.map(tr).join("")}</tbody></table>
     <p class="fig-sub" style="margin:.75rem 0 0">Cross-validation over 1973–2015 (not shown here) ranked the methods differently: the new Ridge had the lowest error at every horizon, which is why it was selected. See the README for both tables.</p>`;
@@ -221,6 +232,9 @@ function renderPerformance(h: number) {
   const seasons = ["DJF (winter)", "MAM (spring)", "JJA (summer)", "SON (autumn)"];
   const sRow = (model: string, season: string) => data.season.find((x) => x.model === model && x.horizon === h && x.season === season);
   const compare = sel === "Persistence" ? "XGBoost" : "Persistence";
+  $("backtest-interval-note").textContent = adaptive
+    ? " The 80% range is adaptive: each month it is widened or narrowed using only outcomes already observed by then."
+    : "";
   barChart($("chart-season"), {
     title: `RMSE by season, ${hLabel(h)} ahead`,
     desc: `Test-window RMSE of ${sel} and ${compare} by season of the target month.`,
